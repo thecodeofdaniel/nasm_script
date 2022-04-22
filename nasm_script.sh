@@ -104,47 +104,36 @@ function are_selected_files_valid()
             check_for_start=$(cat "${asm_file[$int-1]}.asm" | grep "_start" | wc -l)
 
             if [ $check_for_start == 2 ]; then counter=$((counter+1)); fi       # increments counter if main file is found within user input
-            
-            if [ $counter -gt 1 ]; then
-                printf "${RED}Only select one main program${ENDCOLOR}\n"
-                user_input
-            fi
-
-            if [ $counter == 0 ]; then
-                printf "${RED}Select one main program${ENDCOLOR}\n"
-                user_input
-            fi
         fi
     done
 
     # if 'a' is selected check the amount of main programs in dir
     if [ ${char_input[1]} == 'a' ]; then
-        for ((i = 0 ; i < $num_asm_files ; i++)); do
+        for ((i = 0 ; i < $num_asm_files ; i++)); do 
 
             check_for_start=$(cat "${asm_file[$i]}.asm" | grep "_start" | wc -l)
 
             if [ $check_for_start == 2 ]; then counter=$((counter+1)); fi       # increments counter if main file is found within user input
-
-            if [ $counter -gt 1 ]; then
-                printf "${RED}Only select one main program${ENDCOLOR}\n"
-                user_input
-            fi
-
-            if [ $counter == 0 ]; then
-                printf "${RED}Select one main program${ENDCOLOR}\n"
-                user_input
-            fi
-
         done
+    fi
+
+    if [ $counter -gt 1 ]; then
+        printf "${RED}Only select one main program${ENDCOLOR}\n"
+        user_input
+    fi
+
+    if [ $counter == 0 ]; then
+        printf "${RED}Select one main program${ENDCOLOR}\n"
+        user_input
     fi
 }
 
 function print_asm_files()
 {
-    num_asm_files=$(ls | grep '.asm' | wc -l)
+    num_asm_files=$(ls | grep '\b.asm\b' | wc -l)
 
     for ((i = 0 ; i < $num_asm_files ; i++)); do
-        asm_file[$i]=$(ls | grep '.asm' | grep '.asm' -n | grep $(($i+1)) | cut -c 3-)   # only getting .asm files from current directory into array
+        asm_file[$i]=$(ls | grep '\b.asm\b' | grep '.asm' -n | grep $(($i+1)) | cut -c 3-)   # only getting .asm files from current directory into array
         asm_file[$i]=${asm_file[$i]%.*}                                                  # getting the names of files without the .asm extension
     done
     
