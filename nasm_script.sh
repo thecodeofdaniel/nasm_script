@@ -193,7 +193,7 @@ function create_linking_command()
     fi
 }
 
-remove_o_files()
+function remove_obj_files()
 {
     # counting the number of object files within directory
     num_o_files=$(ls | grep "\b.o\b" | wc -l)
@@ -220,7 +220,7 @@ remove_o_files()
 # MAIN BELOW #
 ##############
 
-printf "You can always exit the script with: ${RED}Ctrl + C${ENDCOLOR}\n"
+printf "${DIM}\nYou can always exit the script with: ${BOLD}${YELLOW}Ctrl + C${ENDCOLOR}\n"
 
 print_asm_files
 user_input
@@ -257,13 +257,17 @@ num_exe_file=$(ls | grep "\b$main_file.out\b" | wc -l)      # finding if the .ou
 
 if [ $num_exe_file == 1 ]
 then 
+    remove_obj_files
+
     if [ ${char_input[0]} == 'e' ]; then
-        remove_o_files
-        printf "${GREEN}Running...${ENDCOLOR}\n" 
         eval "./$exe"
+
+        if ! pgrep -x "gedit" > /dev/null; then
+            printf "Exited ${GREEN}$main_file.out${ENDCOLOR}\n"
+        fi
+        
     else
-        remove_o_files
-        printf "\n"
         eval "gdb --quiet $exe"
     fi
+
 fi
