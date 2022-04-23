@@ -107,7 +107,7 @@ function are_selected_files_valid()
         fi
     done
 
-    # if 'a' is selected check the amount of main programs in dir
+    # if 'a' is selected then check the amount of main programs in directory
     if [ ${char_input[1]} == 'a' ]; then
         for ((i = 0 ; i < $num_asm_files ; i++)); do 
 
@@ -196,23 +196,32 @@ function create_linking_command()
 function remove_obj_files()
 {
     # counting the number of object files within directory
-    num_o_files=$(ls | grep "\b.o\b" | wc -l)
+    num_obj_files=$(ls | grep "\b.o\b" | wc -l)
 
     # if the number of object files is greater than 0
-    if [ $num_o_files -gt 0 ]
+    if [ $num_obj_files -gt 0 ]
     then 
         # creating an empty array
         o_files=()
 
         # putting each object file into empty array
-        for ((i = 0 ; i < ${num_o_files} ; i++)); do
+        for ((i = 0 ; i < ${num_obj_files} ; i++)); do
             o_files[$i]=$(ls | grep "\b.o\b" | grep '.o' -n | grep $(($i+1)) | cut -c 3-)
         done
 
         # removing all object files
-        for ((i = 0 ; i < ${num_o_files} ; i++)); do
+        for ((i = 0 ; i < ${num_obj_files} ; i++)); do
             rm "${o_files[$i]}"
         done
+    fi
+}
+
+function remove_previous_out_file()
+{
+    num_out_file=$(ls | grep "\b$main_file.out\b" | wc -l) 
+
+    if [ $num_out_file == 1 ]; then 
+        rm "$main_file.out"; 
     fi
 }
 
@@ -249,25 +258,32 @@ for ((i = 1 ; i < $sz_of_input ; i++)); do
 
 done
 
-link_cmd="$link_cmd$link_cmd_other"     # creating the full linking command by combining strings
-eval "$link_cmd"                        # executing linking command
+remove_previous_out_file
 
-exe=$(echo $link_cmd | grep -o "'$main_file'.out")          # grabbing the name of the executable from the link command
-num_exe_file=$(ls | grep "\b$main_file.out\b" | wc -l)      # finding if the .out file was created in directory
+main_obj_file_created=$(ls | grep "\b$main_file.o\b" | wc -l)
 
-if [ $num_exe_file == 1 ]
-then 
-    remove_obj_files
+if [ $main_obj_file_created == 1 ]; then 
 
-    if [ ${char_input[0]} == 'e' ]; then
-        eval "./$exe"
+    link_cmd="$link_cmd$link_cmd_other"     # creating the full linking command by combining strings
 
-        if ! pgrep -x "gedit" > /dev/null; then
-            printf "Exited ${GREEN}$main_file.out${ENDCOLOR}\n"
+    eval "$link_cmd"                        # executing linking command
+
+    num_out_file=$(ls | grep "\b$main_file.out\b" | wc -l)      # finding if the .out file was created in directory
+
+    if [ $num_out_file == 1 ]; then 
+
+        remove_obj_files
+
+        if [ ${char_input[0]} == 'e' ]; then
+
+            eval "./'$main_file'.out"
+
+            if ! pgrep -x "gedit" > /dev/null; then
+                printf "Exited ${GREEN}$main_file.out${ENDCOLOR}\n"
+            fi
+            
+        else
+            eval "gdb --quiet '$main_file'.out"
         fi
-        
-    else
-        eval "gdb --quiet $exe"
     fi
-
 fi
