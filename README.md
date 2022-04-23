@@ -25,11 +25,16 @@ You'll now see this line
 
 ![Screenshot from 2022-04-15 08-29-31](https://user-images.githubusercontent.com/100104016/163590031-4fd33693-7d31-4dda-8b70-f1b11616bd28.png)
 
-r = read | w = write | x = execute
-
 This file is now executable (note: the file will be highlighted in green to let you know also)
 
 Now move this file to the directory your working in
+
+### Example
+
+```
+$ mv script.sh ~/Desktop/csci150_AssemblyLanguage/labs/lab6b
+```
+### Tip: Use `tab` to autocomplete folder names
 
 Once you've done so, run the script
 
@@ -129,7 +134,8 @@ $ whoami
 
 # Video Examples: 
 
-https://user-images.githubusercontent.com/100104016/164744995-72a42850-883f-4476-9bea-10f87e143857.mp4
+https://user-images.githubusercontent.com/100104016/164873359-68bdf07d-bb88-40f4-b761-cea764be82e2.mp4
 
 
-https://user-images.githubusercontent.com/100104016/164745022-25f55703-3979-41f0-8a92-609bef40de91.mp4
+https://user-images.githubusercontent.com/100104016/164873365-0f1be417-ca41-4fa5-a0d4-0ff48ef88f47.mp4
+
