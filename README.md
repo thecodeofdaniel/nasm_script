@@ -66,7 +66,7 @@ Enter: e 1 2
 ### Explanation: 
 
 `
-e = execute the following files...
+e = execute the following...
 `
 
 `
@@ -86,11 +86,11 @@ Enter: e 2 1
 Any other characters do matter however, these are: `e` `d` `a` `l`
 
 `
-e = execute the following files...
+e = execute the following...
 `
 
 `
-d = debug the following files...
+d = debug the following...
 `
 
 `
