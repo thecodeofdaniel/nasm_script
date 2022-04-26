@@ -15,72 +15,62 @@ BLUE="\e[34m"
 
 function validate_each_character()
 {
-    char_input=("$@") # accepting the user's array characters from input
+    # grabbing the array passed by arguement in function 'user_input'
+    char_input=("$@")
 
-    for ((i = 0 ; i < $sz_of_input ; i++)); do
+    # Checks for the first character
+    if [ "${char_input[0]}" != 'e' ] && [ "${char_input[0]}" != 'd' ]; then  # the first character must always be 'e' or 'd'
+        printf "${RED}'e' or 'd' should be the first character${ENDCOLOR}\n"
+        user_input
+    fi
+    
+    local file_count=0
+    a_count=0
 
-        # for first character input 
-        if [ $i == 0 ]; then 
-            if [ "${char_input[0]}" != 'e' ] && [ "${char_input[0]}" != 'd' ]; then  # the first character must always be 'e' or 'd'
-                printf "${RED}'e' or 'd' should be the first character${ENDCOLOR}\n"
+    # Checks for duplicates and counts the number of files in command
+    for ((i = 1 ; i < $sz_of_input ; i++))
+    do
+        local counter=0
+
+        for (( j = 1 ; j < $sz_of_input ; j++))
+        do
+            # if there's a match add to the counter
+            if [ ${char_input[$i]} == ${char_input[$j]} ]; then
+                ((counter++))
+            fi
+
+            # if the counter is greater than 1 then ask for user input again
+            if [ $counter -gt 1 ]; then 
+                printf "${RED}Duplicate Choices!${ENDCOLOR}\n"
                 user_input
             fi
-        fi
+        done
 
-        # for characters in between first and last character (if input size is only 2, then it'll skip this block)
-        if [ $i -gt 0 ] && [ $i -lt $(($sz_of_input - 1)) ]
-        then
-            # checks for duplicate integers
-            if [[ $((char_input[$i])) == ${char_input[$i]} ]] # if an integer
-            then
-                if [ "${char_input[$i]}" == "${char_input[$i-1]}" ]; then 
-                    printf "${RED}Selected Duplicate Files${ENDCOLOR}\n"
-                    user_input; 
-                fi
+         # if character is an integer and not a letter
+        if [[ $((char_input[$i])) == ${char_input[$i]} ]]; then
+
+            # Makes sure that file picked is on the list
+            if [ ${char_input[$i]} -eq 0 ] || [ ${char_input[$i]} -gt $num_asm_files ]; then
+                printf "${RED}Your selected file is not on the list${ENDCOLOR}\n"
+                user_input
+            else 
+                ((file_count++))
             fi
         fi
 
-        # for the last character input 
-        if [ $i -eq $(($sz_of_input - 1)) ]
-        then
-            # if NOT an integer
-            if [[ $((char_input[$i])) != ${char_input[$i]} ]]   
-            then
-
-                if [ $sz_of_input == 2 ]                        # if the user only entered two characters
-                then            
-                    if [ "${char_input[$i]}" != 'a' ]; then     # If user only eneted two characters, 'a' should be the last character
-                        printf "${RED}The second character should be a '#' on the list or 'a' for all files${ENDCOLOR}\n"
-                        user_input
-                    fi
-                else                                                          
-                    if [ "${char_input[$i]}" != 'l' ]; then     # otherwise, the last char must be 'l'
-                        printf "${RED}The last character should be a '#' on the list or 'l' for including library${ENDCOLOR}\n"
-                        user_input
-                    fi
-                fi
-            fi
-            
-            # if IT IS an integer
-            if [[ $((char_input[$i])) == ${char_input[$i]} ]]
-            then  
-                if [ ${char_input[$i-1]} == 'a' ]; then         # If number is entered after inputting 'a'
-                    printf "${RED}'a' will select all, no need to select number ${ENDCOLOR}\n"
-                    user_input
-                fi
-            fi
-
-            # checks for duplicate files picked
-            if [[ $((char_input[$i])) == ${char_input[$i]} ]]   # if IT IS an integer
-            then
-                if [ "${char_input[$i]}" == "${char_input[$i-1]}" ]; then 
-                    printf "${RED}Selected Duplicate Files!${ENDCOLOR}\n"
-                    user_input; 
-                fi
-            fi
-        fi
-
+        # if 'a' is found in command then set a_count to 1
+        if [ ${char_input[$i]} == 'a' ]; then 
+            a_count=1
+        fi 
     done
+    
+    # If 'a' is chosen then there must to be other files chosen in command
+    if [ $a_count == 1 ] && [ $file_count -gt 0 ]; then 
+        printf "${RED}Choosing 'a' will select all files${ENDCOLOR}\n"
+        user_input
+    fi
+      
+    are_selected_files_valid "${char_input[@]}"
 }
 
 function are_selected_files_valid()
@@ -89,40 +79,43 @@ function are_selected_files_valid()
 
     local counter=0
 
-    # checks if there are too many main files selected
-    for ((i = 1 ; i < $sz_of_input ; i++)) 
-    do
-        if [[ $((char_input[$i])) == ${char_input[$i]} ]]; then     # if IT IS an integer
+    # if 'a' WASN'T in command, check each file user picked for MAIN
+    if [ $a_count == 0 ]; then 
+        for ((i = 1 ; i < $sz_of_input ; i++)) 
+        do
+            # if character IS an integer
+            if [[ $((char_input[$i])) == ${char_input[$i]} ]]; then
 
-            # Looks to see if integer selected is on the list
-            if [ ${char_input[$i]} -eq 0 ] || [ ${char_input[$i]} -gt $num_asm_files ]; then
-                printf "${RED}Your selected file is not on the list${ENDCOLOR}\n"
-                user_input
+                int=${char_input[$i]}
+                
+                # checks if .asm file is a MAIN
+                check_for_start=$(cat "${asm_file[$int-1]}.asm" | grep "_start" | wc -l)
+
+                # increments counter if .asm file is MAIN
+                if [ $check_for_start == 2 ]; then 
+                    counter=$((counter+1)) 
+                fi      
             fi
-
-            int=${char_input[$i]}
-            check_for_start=$(cat "${asm_file[$int-1]}.asm" | grep "_start" | wc -l)
-
-            if [ $check_for_start == 2 ]; then counter=$((counter+1)); fi       # increments counter if main file is found within user input
-        fi
-    done
-
-    # if 'a' is selected then check the amount of main programs in directory
-    if [ ${char_input[1]} == 'a' ]; then
-        for ((i = 0 ; i < $num_asm_files ; i++)); do 
-
+        done
+    fi
+    
+    # if 'a' WAS in command check each file for MAIN file
+    if [ $a_count == 1 ]; then 
+    
+        for ((i = 0 ; i < $num_asm_files ; i++))
+        do
+            # checks if .asm file is a MAIN file
             check_for_start=$(cat "${asm_file[$i]}.asm" | grep "_start" | wc -l)
 
-            if [ $check_for_start == 2 ]; then counter=$((counter+1)); fi       # increments counter if main file is found within user input
+            # increments counter if .asm file is MAIN file
+            if [ $check_for_start == 2 ]; then
+                counter=$((counter+1)) 
+            fi
         done
     fi
 
-    if [ $counter -gt 1 ]; then
-        printf "${RED}Only select one main program${ENDCOLOR}\n"
-        user_input
-    fi
-
-    if [ $counter == 0 ]; then
+    # If there's no or too many MAIN files then ask for user input again
+    if [ $counter == 0 ] || [ $counter -gt 1 ] ; then
         printf "${RED}Select one main program${ENDCOLOR}\n"
         user_input
     fi
@@ -146,7 +139,7 @@ function print_asm_files()
 function user_input()
 {    
     sz_of_input=0
-    while [ $sz_of_input -lt 2 ]
+    while [ $sz_of_input -lt 2 ] || [ $sz_of_input -gt $(($num_asm_files+2)) ]
     do
         printf "\nEnter: ${BOLD}${YELLOW}"
         read -a arr             # reading from user input
@@ -161,10 +154,9 @@ function user_input()
             char_input[$counter]=$elem
             ((counter++))
         done
-
-        validate_each_character  "${char_input[@]}"
-        are_selected_files_valid "${char_input[@]}"
     done
+
+    validate_each_character "${char_input[@]}"
 }
 
 function create_linking_command()
