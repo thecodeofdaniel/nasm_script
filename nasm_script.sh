@@ -46,7 +46,7 @@ function validate_each_character()
             fi
         done
 
-         # if character is an integer and not a letter
+        # if character is an integer and not a letter
         if [[ $((char_input[$i])) == ${char_input[$i]} ]]; then
 
             # Makes sure that file picked is on the list
@@ -59,7 +59,7 @@ function validate_each_character()
         fi
 
         # if 'a' is found in command then set a_count to 1
-        if [ ${char_input[$i]} == 'a' ]; then 
+        if [ "${char_input[$i]}" == 'a' ]; then 
             a_count=1
         fi 
     done
@@ -168,20 +168,22 @@ function create_linking_command()
     if [ $check_for_start == 2 ]; then 
         main_file=$1
         link_cmd+=" '$main_file'.out"
-    fi
-
-    if [ "$1" == "$library_location" ] 
-    then
-        library_dir=${library_location%/*}
-        library_file=${library_location##*/} 
-
-        o_file_created=$(ls "$library_dir" | grep "\b$library_file.o\b" | wc -l)
+        link_cmd+=" '$main_file'.o"
     else 
-        o_file_created=$(ls | grep "\b$1.o\b" | wc -l)
-    fi
 
-    if [ $o_file_created == 1 ]; then 
-        link_cmd_other+=" '$1'.o"
+        if [ "$1" == "$library_location" ]; then
+
+            library_dir=${library_location%/*}
+            library_file=${library_location##*/} 
+
+            o_file_created=$(ls "$library_dir" | grep "\b$library_file.o\b" | wc -l)
+        else 
+            o_file_created=$(ls | grep "\b$1.o\b" | wc -l)
+        fi
+
+        if [ $o_file_created == 1 ]; then 
+            link_cmd_other+=" '$1'.o"
+        fi
     fi
 }
 
