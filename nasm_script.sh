@@ -167,28 +167,39 @@ function user_input()
 
 function create_linking_command()
 {   
-    nasm -f elf -g "$1.asm"
+    # passing in name of file from parameter
+    local file_name=$1
+    
+    # '-g' will allow the .out file to be debugged
+    if [ "${char_input[0]}" = 'd' ]; then
+        nasm -f elf -g "$file_name.asm"
+    else 
+        nasm -f elf "$file_name.asm"
+    fi
 
-    check_for_start=$(cat "$1.asm" | grep '_start' | wc -l)
+    # this finds which file is MAIN and determines the name of the .out file
+    check_for_start=$(cat "$file_name.asm" | grep '_start' | wc -l)
 
     if [ $check_for_start == 2 ]; then 
-        main_file=$1
+        main_file=$file_name
         link_cmd+=" '$main_file'.out"
         link_cmd+=" '$main_file'.o"
     else 
 
-        if [ "$1" == "$library_location" ]; then
-
+        # The following code determines if object file was created...
+        if [ "$file_name" == "$library_location" ]
+        then
             library_dir=${library_location%/*}
             library_file=${library_location##*/} 
 
             o_file_created=$(ls "$library_dir" | grep "\b$library_file.o\b" | wc -l)
         else 
-            o_file_created=$(ls | grep "\b$1.o\b" | wc -l)
+            o_file_created=$(ls | grep "\b$file_name.o\b" | wc -l)
         fi
 
+        # If so, then put it the linking command
         if [ $o_file_created == 1 ]; then 
-            link_cmd_other+=" '$1'.o"
+            link_cmd_other+=" '$file_name'.o"
         fi
     fi
 }
