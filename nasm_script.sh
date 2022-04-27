@@ -27,7 +27,7 @@ function validate_each_character()
     local file_count=0
     a_count=0
 
-    # Checks for duplicates and counts the number of files in command
+    # Checks for duplicates and checks each character of command
     for ((i = 1 ; i < $sz_of_input ; i++))
     do
         local counter=0
@@ -41,7 +41,7 @@ function validate_each_character()
 
             # if the counter is greater than 1 then ask for user input again
             if [ $counter -gt 1 ]; then 
-                printf "${RED}Duplicate Choices!${ENDCOLOR}\n"
+                printf "${RED}Duplicate ${char_input[$i]}'s!${ENDCOLOR}\n"
                 user_input
             fi
         done
@@ -51,20 +51,26 @@ function validate_each_character()
 
             # Makes sure that file picked is on the list
             if [ ${char_input[$i]} -eq 0 ] || [ ${char_input[$i]} -gt $num_asm_files ]; then
-                printf "${RED}Your selected file is not on the list${ENDCOLOR}\n"
+                printf "${RED}${char_input[$i]} is not on the list${ENDCOLOR}\n"
                 user_input
             else 
+                # otherwise increment the file count
                 ((file_count++))
+            fi
+        # if 'a' is in the command, set a_count = 1
+        elif [ "${char_input[$i]}" == 'a' ]; then 
+            a_count=1
+        # if any other character besides 'l' is included, ask for user input again
+        else
+            if [ "${char_input[$i]}" != 'l' ]; then 
+                printf "${RED}'${char_input[$i]}' is not allowed at position $(($i+1))${ENDCOLOR}\n"
+                user_input
             fi
         fi
 
-        # if 'a' is found in command then set a_count to 1
-        if [ "${char_input[$i]}" == 'a' ]; then 
-            a_count=1
-        fi 
     done
     
-    # If 'a' is chosen then there must to be other files chosen in command
+    # If 'a' is chosen, but files are selected in command then ask for user input again
     if [ $a_count == 1 ] && [ $file_count -gt 0 ]; then 
         printf "${RED}Choosing 'a' will select all files${ENDCOLOR}\n"
         user_input
