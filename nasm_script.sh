@@ -19,7 +19,7 @@ function validate_each_character()
     # grabbing the array passed by arguement in function 'user_input'
     char_input=("$@")
 
-    # Checks for the first character
+    # checks for the first character
     if [ "${char_input[0]}" != 'e' ] && [ "${char_input[0]}" != 'd' ]; then  # the first character must always be 'e' or 'd'
         printf "${RED}'e' or 'd' should be the first character${ENDCOLOR}\n"
         user_input
@@ -28,7 +28,7 @@ function validate_each_character()
     local file_count=0
     a_count=0
 
-    # Checks for duplicates and checks each character of command
+    # checks for duplicates and checks each character of command
     for ((i = 1 ; i < $sz_of_input ; i++))
     do
         local counter=0
@@ -50,7 +50,7 @@ function validate_each_character()
         # if character is an integer and not a letter
         if [[ $((char_input[$i])) == ${char_input[$i]} ]]; then
 
-            # Makes sure that file picked is on the list
+            # makes sure that file picked is on the list
             if [ ${char_input[$i]} -lt 1 ] || [ ${char_input[$i]} -gt $num_asm_files ]; then
                 printf "${RED}${char_input[$i]} is not on the list${ENDCOLOR}\n"
                 user_input
@@ -71,19 +71,17 @@ function validate_each_character()
 
     done
     
-    # If 'a' is chosen, but files are selected in command then ask for user input again
+    # if 'a' is chosen, but files are selected in command then ask for user input again
     if [ $a_count == 1 ] && [ $file_count -gt 0 ]; then 
         printf "${RED}Choosing 'a' will select all files${ENDCOLOR}\n"
         user_input
     fi
       
-    are_selected_files_valid "${char_input[@]}"
+    are_selected_files_valid
 }
 
 function are_selected_files_valid()
 {
-    char_input=("$@")
-
     local counter=0
 
     # if 'a' WASN'T in command, check each file user picked for MAIN
@@ -121,7 +119,7 @@ function are_selected_files_valid()
         done
     fi
 
-    # If there's no or too many MAIN files then ask for user input again
+    # if there's no or too many MAIN files then ask for user input again
     if [ $counter == 0 ] || [ $counter -gt 1 ] ; then
         printf "${RED}Select one main program${ENDCOLOR}\n"
         user_input
@@ -130,7 +128,7 @@ function are_selected_files_valid()
 
 function print_asm_files()
 {
-    # Grabs the number of .asm file in current directory
+    # grabs the number of .asm file in current directory
     num_asm_files=$(ls | grep '\b.asm\b' | wc -l)
 
     if [ $num_asm_files == 0 ]; then
@@ -140,7 +138,7 @@ function print_asm_files()
 
     printf '\n'
 
-    # Puts the names of the .asm files in array and outputs list onto screen
+    # puts the names of the .asm files in array and outputs list onto screen
     for ((i = 0 ; i < $num_asm_files ; i++)); do
         asm_file[$i]=$(ls | grep '\b.asm\b' | grep '.asm' -n | grep $(($i+1)) | cut -c 3-)
         asm_file[$i]=${asm_file[$i]%.*}                                                  
@@ -150,11 +148,11 @@ function print_asm_files()
 
 function user_input()
 {    
-    # Using while-loop because there is no do-while-loop in bash
+    # using while-loop because there is no do-while-loop in bash
     sz_of_input=0
     while [ $sz_of_input -lt 2 ] || [ $sz_of_input -gt $(($num_asm_files+2)) ]
     do
-        # Grabbing each character of user input and putting them into array
+        # grabbing each character of user input and putting them into array
         printf "\nEnter: ${BOLD}${YELLOW}"
         read -a arr             
         printf "${ENDCOLOR}"
@@ -181,13 +179,14 @@ function create_linking_command()
     # this finds which file is MAIN and determines the name of the .out file
     check_for_start=$(cat "$file_name.asm" | grep '_start' | wc -l)
 
+    # if main file is found then place them first in linking command
     if [ $check_for_start == 2 ]; then 
         main_file=$file_name
         link_cmd+=" '$main_file'.out"
         link_cmd+=" '$main_file'.o"
     else 
 
-        # The following code determines if object file was created...
+        # the following code determines if object file was created...
         if [ "$file_name" == "$library_location" ]
         then
             library_dir=${library_location%/*}
@@ -198,7 +197,7 @@ function create_linking_command()
             o_file_created=$(ls | grep "\b$file_name.o\b" | wc -l)
         fi
 
-        # If so, then put it the linking command
+        # if so, then put it in the linking command's other half
         if [ $o_file_created == 1 ]; then 
             link_cmd_other+=" '$file_name'.o"
         fi
@@ -223,6 +222,7 @@ function remove_obj_files()
 
 function remove_previous_out_file()
 {
+    # code below deletes the previous main .out file if there was one created
     local num_out_file=$(ls | grep "\b$main_file.out\b" | wc -l) 
 
     if [ $num_out_file == 1 ]; then 
@@ -232,9 +232,12 @@ function remove_previous_out_file()
 
 function evaluate_command()
 {
+    # creating a string for the link command
     link_cmd="ld -m elf_i386 -o"
     link_cmd_other=""
 
+    # code below evaluates each character, after the first, in
+    # command in sends them to the "create_linking..." function
     for ((i = 1 ; i < $sz_of_input ; i++)); do
 
         local char=${char_input[$i]}
@@ -246,7 +249,7 @@ function evaluate_command()
         
         if [ $char == 'a' ]; then
             for ((j = 0 ; j < $num_asm_files ; j++)); do
-                create_linking_command "${asm_file[$j]}"    # nasm's all .asm files
+                create_linking_command "${asm_file[$j]}" 
             done
         fi
 
@@ -261,18 +264,22 @@ function execute_debug()
 {
     remove_previous_out_file
 
+    # determines if main object file was created
     local main_obj_file_created=$(ls | grep "\b$main_file.o\b" | wc -l)
 
     if [ $main_obj_file_created == 1 ]
     then 
+        # executes the linking command with the string created in "evaluate command" function
         eval "$link_cmd$link_cmd_other"
 
+        # determines if main out (executable) file was created
         local num_out_file=$(ls | grep "\b$main_file.out\b" | wc -l)
 
         if [ $num_out_file == 1 ]
         then 
             remove_obj_files
-
+            
+            # if user chose 'e' then execute the main .out file
             if [ ${char_input[0]} == 'e' ]
             then
                 eval "./'$main_file'.out"
@@ -280,6 +287,7 @@ function execute_debug()
                 if ! pgrep -x "./'$main_file'.out" > /dev/null; then
                     printf "Exited ${GREEN}$main_file.out${ENDCOLOR}\n"
                 fi 
+            # otherwise debug the main .out file
             else
                 eval "gdb --quiet '$main_file'.out"
             fi
