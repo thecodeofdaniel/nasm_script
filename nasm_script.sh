@@ -212,17 +212,10 @@ function remove_obj_files()
     # if the number of object files is greater than 0
     if [ $num_obj_files -gt 0 ]
     then 
-        # creating an empty array
-        o_files=()
-
-        # putting each object file into empty array
+        # grabbing the name of the obj file and removing it
         for ((i = 0 ; i < ${num_obj_files} ; i++)); do
-            o_files[$i]=$(ls | grep "\b.o\b" | grep '.o' -n | grep $(($i+1)) | cut -c 3-)
-        done
-
-        # removing all object files
-        for ((i = 0 ; i < ${num_obj_files} ; i++)); do
-            rm "${o_files[$i]}"
+            o_file=$(ls | grep "\b.o\b" | grep '.o' -n | grep '1:' | cut -c 3-)
+            rm "$o_file"
         done
     fi
 }
@@ -276,7 +269,8 @@ main_obj_file_created=$(ls | grep "\b$main_file.o\b" | wc -l)
 if [ $main_obj_file_created == 1 ]; then 
 
     link_cmd="$link_cmd$link_cmd_other"     # creating the full linking command by combining strings
-
+    
+    echo $link_cmd
     eval "$link_cmd"                        # executing linking command
 
     num_out_file=$(ls | grep "\b$main_file.out\b" | wc -l)      # finding if the .out file was created in directory
