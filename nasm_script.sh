@@ -222,11 +222,38 @@ function remove_obj_files()
 
 function remove_previous_out_file()
 {
-    num_out_file=$(ls | grep "\b$main_file.out\b" | wc -l) 
+    local num_out_file=$(ls | grep "\b$main_file.out\b" | wc -l) 
 
     if [ $num_out_file == 1 ]; then 
         rm "$main_file.out"; 
     fi
+}
+
+function evaluate_command()
+{
+    link_cmd="ld -m elf_i386 -o"
+    link_cmd_other=" "
+
+    for ((i = 1 ; i < $sz_of_input ; i++)); do
+
+        local char=${char_input[$i]}
+
+        if [[ $((char)) == $char ]]; then 
+            int=$char
+            create_linking_command "${asm_file[$int-1]}"
+        fi
+        
+        if [ $char == 'a' ]; then
+            for ((j = 0 ; j < $num_asm_files ; j++)); do
+                create_linking_command "${asm_file[$j]}"    # nasm's all .asm files
+            done
+        fi
+
+        if [ $char == 'l' ]; then 
+            create_linking_command "$library_location"
+        fi
+
+    done
 }
 
 ##############
@@ -237,30 +264,8 @@ printf "${DIM}\nYou can always exit the script with: ${BOLD}${YELLOW}Ctrl + C${E
 
 print_asm_files
 user_input
+evaluate_command
 
-link_cmd="ld -m elf_i386 -o"
-link_cmd_other=" "
-
-for ((i = 1 ; i < $sz_of_input ; i++)); do
-
-    char=${char_input[$i]}
-
-    if [[ $((char)) == $char ]]; then 
-        int=$char
-        create_linking_command "${asm_file[$int-1]}"
-    fi
-    
-    if [ $char == 'a' ]; then
-        for ((j = 0 ; j < $num_asm_files ; j++)); do
-            create_linking_command "${asm_file[$j]}"    # nasm's all .asm files
-        done
-    fi
-
-    if [ $char == 'l' ]; then 
-        create_linking_command "$library_location"
-    fi
-
-done
 
 remove_previous_out_file
 
