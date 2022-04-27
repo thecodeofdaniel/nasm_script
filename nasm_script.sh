@@ -232,7 +232,7 @@ function remove_previous_out_file()
 function evaluate_command()
 {
     link_cmd="ld -m elf_i386 -o"
-    link_cmd_other=" "
+    link_cmd_other=""
 
     for ((i = 1 ; i < $sz_of_input ; i++)); do
 
@@ -256,44 +256,39 @@ function evaluate_command()
     done
 }
 
-##############
-# MAIN BELOW #
-##############
+function execute_debug()
+{
+    remove_previous_out_file
+
+    local main_obj_file_created=$(ls | grep "\b$main_file.o\b" | wc -l)
+
+    if [ $main_obj_file_created == 1 ]
+    then 
+        eval "$link_cmd$link_cmd_other"
+
+        local num_out_file=$(ls | grep "\b$main_file.out\b" | wc -l)
+
+        if [ $num_out_file == 1 ]
+        then 
+            remove_obj_files
+
+            if [ ${char_input[0]} == 'e' ]
+            then
+                eval "./'$main_file'.out"
+
+                if ! pgrep -x "./'$main_file'.out" > /dev/null; then
+                    printf "Exited ${GREEN}$main_file.out${ENDCOLOR}\n"
+                fi 
+            else
+                eval "gdb --quiet '$main_file'.out"
+            fi
+        fi
+    fi
+}
 
 printf "${DIM}\nYou can always exit the script with: ${BOLD}${YELLOW}Ctrl + C${ENDCOLOR}\n"
 
 print_asm_files
 user_input
 evaluate_command
-
-
-remove_previous_out_file
-
-main_obj_file_created=$(ls | grep "\b$main_file.o\b" | wc -l)
-
-if [ $main_obj_file_created == 1 ]; then 
-
-    link_cmd="$link_cmd$link_cmd_other"     # creating the full linking command by combining strings
-    
-    echo $link_cmd
-    eval "$link_cmd"                        # executing linking command
-
-    num_out_file=$(ls | grep "\b$main_file.out\b" | wc -l)      # finding if the .out file was created in directory
-
-    if [ $num_out_file == 1 ]; then 
-
-        remove_obj_files
-
-        if [ ${char_input[0]} == 'e' ]; then
-
-            eval "./'$main_file'.out"
-
-            if ! pgrep -x "gedit" > /dev/null; then
-                printf "Exited ${GREEN}$main_file.out${ENDCOLOR}\n"
-            fi
-            
-        else
-            eval "gdb --quiet '$main_file'.out"
-        fi
-    fi
-fi
+execute_debug
