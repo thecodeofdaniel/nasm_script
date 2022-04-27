@@ -1,8 +1,9 @@
 #!/bin/bash
 
 library_location="/home/$(whoami)/Desktop/csci150_AssemblyLanguage/z_library/library.asm"
-
 library_location="${library_location%.asm}"
+
+printf "\n\e[2mYou can always exit the script with: \e[1m\e[33mCtrl + C\e[0m\n"
 
 # Colors for when outputting text
 ENDCOLOR="\e[0m"
@@ -286,7 +287,7 @@ function execute_debug()
     fi
 }
 
-printf "${DIM}\nYou can always exit the script with: ${BOLD}${YELLOW}Ctrl + C${ENDCOLOR}\n"
+### MAIN ###
 
 print_asm_files
 user_input
