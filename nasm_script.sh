@@ -50,7 +50,7 @@ function validate_each_character()
         if [[ $((char_input[$i])) == ${char_input[$i]} ]]; then
 
             # Makes sure that file picked is on the list
-            if [ ${char_input[$i]} -eq 0 ] || [ ${char_input[$i]} -gt $num_asm_files ]; then
+            if [ ${char_input[$i]} -lt 1 ] || [ ${char_input[$i]} -gt $num_asm_files ]; then
                 printf "${RED}${char_input[$i]} is not on the list${ENDCOLOR}\n"
                 user_input
             else 
@@ -129,40 +129,40 @@ function are_selected_files_valid()
 
 function print_asm_files()
 {
+    # Grabs the number of .asm file in current directory
     num_asm_files=$(ls | grep '\b.asm\b' | wc -l)
 
-    for ((i = 0 ; i < $num_asm_files ; i++)); do
-        asm_file[$i]=$(ls | grep '\b.asm\b' | grep '.asm' -n | grep $(($i+1)) | cut -c 3-)   # only getting .asm files from current directory into array
-        asm_file[$i]=${asm_file[$i]%.*}                                                  # getting the names of files without the .asm extension
-    done
-    
+    if [ $num_asm_files == 0 ]; then
+        printf "\n${BOLD}${RED}No .asm files here!${ENDCOLOR}\n"
+        exit
+    fi
+
     printf '\n'
+
+    # Puts the names of the .asm files in array and outputs list onto screen
     for ((i = 0 ; i < $num_asm_files ; i++)); do
+        asm_file[$i]=$(ls | grep '\b.asm\b' | grep '.asm' -n | grep $(($i+1)) | cut -c 3-)
+        asm_file[$i]=${asm_file[$i]%.*}                                                  
         printf "${BOLD}${BLUE}$(($i+1)):${ENDCOLOR} ${asm_file[$i]}.asm\n"
-    done 
+    done
 }
 
 function user_input()
 {    
+    # Using while-loop because there is no do-while-loop in bash
     sz_of_input=0
     while [ $sz_of_input -lt 2 ] || [ $sz_of_input -gt $(($num_asm_files+2)) ]
     do
+        # Grabbing each character of user input and putting them into array
         printf "\nEnter: ${BOLD}${YELLOW}"
-        read -a arr             # reading from user input
+        read -a arr             
         printf "${ENDCOLOR}"
 
-        sz_of_input=${#arr[@]}  # getting the number of characters from string besides 'space'
-        char_input=($sz_of_input) # setting up array with its size
-
-        local counter=0               # setting up counter for for-loop
-        for elem in ${arr[@]}
-        do
-            char_input[$counter]=$elem
-            ((counter++))
-        done
+        # getting the number of characters from string besides 'space'
+        sz_of_input=${#arr[@]}  
     done
 
-    validate_each_character "${char_input[@]}"
+    validate_each_character "${arr[@]}"
 }
 
 function create_linking_command()
