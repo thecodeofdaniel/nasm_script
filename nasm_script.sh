@@ -3,7 +3,7 @@
 library_location="/home/$(whoami)/Desktop/csci150_AssemblyLanguage/z_library/library.asm"
 library_location="${library_location%.asm}"
 
-printf "\n\e[2mYou can always exit the script with: \e[1m\e[33mCtrl + C\e[0m\n"
+display_how_to_exit=true
 
 # Colors for when outputting text
 ENDCOLOR="\e[0m"
@@ -123,11 +123,18 @@ function are_selected_files_valid()
     if [ $counter == 0 ] || [ $counter -gt 1 ] ; then
         printf "${RED}Select one main program${ENDCOLOR}\n"
         user_input
+    else    
+        evaluate_command
     fi
 }
 
 function print_asm_files()
 {
+    # Displays user how to exit script
+    if [ $display_how_to_exit = true ]; then 
+        printf "\n${DIM}You can always exit the script with: ${BOLD}${YELLOW}Ctrl + C${ENDCOLOR}\n"
+    fi
+
     # grabs the number of .asm file in current directory
     num_asm_files=$(ls | grep '\b.asm\b' | wc -l)
 
@@ -158,7 +165,13 @@ function user_input()
         printf "${ENDCOLOR}"
 
         # getting the number of characters from string besides 'space'
-        sz_of_input=${#arr[@]}  
+        sz_of_input=${#arr[@]}
+
+        # Adding the abilty to clear screen 
+        if [ $sz_of_input == 1 ] && [ "${arr[0]}" == 'c' ]; then
+            clear
+            print_asm_files
+        fi
     done
 
     validate_each_character "${arr[@]}"
@@ -278,7 +291,6 @@ function execute_debug()
         if [ $num_out_file == 1 ]
         then 
             remove_obj_files
-            
             # if user chose 'e' then execute the main .out file
             if [ ${char_input[0]} == 'e' ]
             then
@@ -297,7 +309,14 @@ function execute_debug()
 
 ### MAIN ###
 
-print_asm_files
-user_input
-evaluate_command
-execute_debug
+# Allows script to loop until user exits
+function main()
+{
+    print_asm_files
+    user_input
+    execute_debug
+
+    main
+}
+
+main
