@@ -5,13 +5,13 @@ library_location="${library_location%.asm}"
 
 display_how_to_exit=true
 
-# Colors for when outputting text
-ENDCOLOR="\e[0m"
+# Colors/TextFormat for when outputting text
+EC="\e[0m"
 BOLD="\e[1m"
 DIM="\e[2m"
 RED="\e[31m"
-GREEN="\e[32m"
-YELLOW="\e[33m"
+GRN="\e[32m"
+YELW="\e[33m"
 BLUE="\e[34m"
 
 function validate_each_character()
@@ -21,7 +21,7 @@ function validate_each_character()
 
     # checks for the first character
     if [ "${char_input[0]}" != 'e' ] && [ "${char_input[0]}" != 'd' ]; then  # the first character must always be 'e' or 'd'
-        printf "${RED}'e' or 'd' should be the first character${ENDCOLOR}\n"
+        printf "${RED}'e' or 'd' should be the first character${EC}\n"
         user_input
     fi
     
@@ -42,7 +42,7 @@ function validate_each_character()
 
             # if the counter is greater than 1 then ask for user input again
             if [ $counter -gt 1 ]; then 
-                printf "${RED}Duplicate ${char_input[$i]}'s!${ENDCOLOR}\n"
+                printf "${RED}Duplicate ${char_input[$i]}'s!${EC}\n"
                 user_input
             fi
         done
@@ -52,7 +52,7 @@ function validate_each_character()
 
             # makes sure that file picked is on the list
             if [ ${char_input[$i]} -lt 1 ] || [ ${char_input[$i]} -gt $num_asm_files ]; then
-                printf "${RED}${char_input[$i]} is not on the list${ENDCOLOR}\n"
+                printf "${RED}${char_input[$i]} is not on the list${EC}\n"
                 user_input
             else 
                 # otherwise increment the file count
@@ -64,7 +64,7 @@ function validate_each_character()
         # if any other character besides 'l' is included, ask for user input again
         else
             if [ "${char_input[$i]}" != 'l' ]; then 
-                printf "${RED}'${char_input[$i]}' is not allowed at position $(($i+1))${ENDCOLOR}\n"
+                printf "${RED}'${char_input[$i]}' is not allowed at position $(($i+1))${EC}\n"
                 user_input
             fi
         fi
@@ -73,7 +73,7 @@ function validate_each_character()
     
     # if 'a' is chosen, but files are selected in command then ask for user input again
     if [ $a_count == 1 ] && [ $file_count -gt 0 ]; then 
-        printf "${RED}Choosing 'a' will select all files${ENDCOLOR}\n"
+        printf "${RED}Choosing 'a' will select all files${EC}\n"
         user_input
     fi
       
@@ -121,7 +121,7 @@ function are_selected_files_valid()
 
     # if there's no or too many MAIN files then ask for user input again
     if [ $counter == 0 ] || [ $counter -gt 1 ] ; then
-        printf "${RED}Select one main program${ENDCOLOR}\n"
+        printf "${RED}Select one main program${EC}\n"
         user_input
     else    
         evaluate_command
@@ -130,17 +130,17 @@ function are_selected_files_valid()
 
 function print_asm_files()
 {
-    # Displays user how to exit script
-    if [ $display_how_to_exit = true ]; then 
-        printf "\n${DIM}You can always exit the script with: ${BOLD}${YELLOW}Ctrl + C${ENDCOLOR}\n"
-    fi
-
     # grabs the number of .asm file in current directory
     num_asm_files=$(ls | grep '\b.asm\b' | wc -l)
 
     if [ $num_asm_files == 0 ]; then
-        printf "\n${BOLD}${RED}No .asm files here!${ENDCOLOR}\n"
+        printf "\n${BOLD}${RED}No .asm files here!${EC}\n"
         exit
+    fi
+
+    # Displays user how to exit script
+    if [ $display_how_to_exit = true ]; then 
+        printf "\n${DIM}Exit the script with: ${BOLD}${YELW}Ctrl + C${EC}\n"
     fi
 
     printf '\n'
@@ -149,7 +149,7 @@ function print_asm_files()
     for ((i = 0 ; i < $num_asm_files ; i++)); do
         asm_file[$i]=$(ls | grep '\b.asm\b' | grep '.asm' -n | grep $(($i+1)) | cut -c 3-)
         asm_file[$i]=${asm_file[$i]%.*}                                                  
-        printf "${BOLD}${BLUE}$(($i+1)):${ENDCOLOR} ${asm_file[$i]}.asm\n"
+        printf "${BOLD}${BLUE}$(($i+1)):${EC} ${asm_file[$i]}.asm\n"
     done
 }
 
@@ -160,9 +160,9 @@ function user_input()
     while [ $sz_of_input -lt 2 ] || [ $sz_of_input -gt $(($num_asm_files+2)) ]
     do
         # grabbing each character of user input and putting them into array
-        printf "\nEnter: ${BOLD}${YELLOW}"
+        printf "\nEnter: ${BOLD}${YELW}"
         read -a arr             
-        printf "${ENDCOLOR}"
+        printf "${EC}"
 
         # getting the number of characters from string besides 'space'
         sz_of_input=${#arr[@]}
@@ -297,7 +297,7 @@ function execute_debug()
                 eval "./'$main_file'.out"
 
                 if ! pgrep -x "./'$main_file'.out" > /dev/null; then
-                    printf "Exited ${GREEN}$main_file.out${ENDCOLOR}\n"
+                    printf "Exited ${GRN}$main_file.out${EC}\n"
                 fi 
             # otherwise debug the main .out file
             else
@@ -315,6 +315,9 @@ function main()
     print_asm_files
     user_input
     execute_debug
+    
+    printf "\nPress ${BOLD}${YELW}Enter${EC} to continue: "
+    read -p ''
 
     main
 }
