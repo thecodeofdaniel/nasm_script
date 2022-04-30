@@ -63,7 +63,7 @@ function validate_each_character()
             a_count=1
         # if any other character besides 'l' is included, ask for user input again
         else
-            if [ "${char_input[$i]}" != 'l' ]; then 
+            if [ "${char_input[$i]}" != 'l' ] && [ "${char_input[$i]}" != '' ]; then 
                 printf "${RED}'${char_input[$i]}' is not allowed at position $(($i+1))${EC}\n"
                 user_input
             fi
@@ -317,8 +317,9 @@ function main()
     execute_debug
     
     printf "\nPress ${BOLD}${YELW}Enter${EC} to continue: "
-    read -p ''
-
+    read -r answer
+    if [[ $answer != '' ]]; then exit; fi
+    
     main
 }
 
