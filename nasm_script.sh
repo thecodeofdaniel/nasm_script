@@ -20,7 +20,7 @@ function validate_each_character()
     char_input=("$@")
 
     # checks for the first character
-    if [ "${char_input[0]}" != 'e' ] && [ "${char_input[0]}" != 'd' ]; then  # the first character must always be 'e' or 'd'
+    if [ "${char_input[0]}" != 'e' ] && [ "${char_input[0]}" != 'd' ]; then
         printf "${RED}'e' or 'd' should be the first character${EC}\n"
         user_input
     fi
@@ -28,10 +28,10 @@ function validate_each_character()
     local file_count=0
     a_count=0
 
-    # checks for duplicates and checks each character of command
+    # Goes through each character in command 
     for ((i = 1 ; i < $sz_of_input ; i++))
     do
-        # if character is an integer and not a letter
+        # if character is an integer
         if [[ ${char_input[$i]} =~ ^[0-9]+$ ]]; then
 
             # makes sure that file picked is on the list
@@ -46,7 +46,7 @@ function validate_each_character()
         elif [ "${char_input[$i]}" == 'a' ]; then 
             ((a_count++))
         # if any other character besides 'l' is included, ask for user input again
-        elif [ "${char_input[$i]}" != 'l' ] && [ "${char_input[$i]}" != '' ]; then 
+        elif [ "${char_input[$i]}" != 'l' ]; then
             printf "${RED}'${char_input[$i]}' is not allowed at position $(($i+1))${EC}\n"
             user_input
         fi
@@ -63,10 +63,10 @@ function validate_each_character()
         user_input
     fi
       
-    are_selected_files_valid
+    check_for_main
 }
 
-function are_selected_files_valid()
+function check_for_main()
 {
     local counter=0
 
@@ -110,6 +110,7 @@ function are_selected_files_valid()
         printf "${RED}Select one main program${EC}\n"
         user_input
     else    
+    # otherwise go to this function
         evaluate_command
     fi
 }
@@ -143,6 +144,7 @@ function user_input()
 {    
     # using while-loop because there is no do-while-loop in bash
     sz_of_input=0
+    local arr=()
     while [ $sz_of_input -lt 2 ] || [ $sz_of_input -gt $(($num_asm_files+2)) ]
     do
         # grabbing each character of user input and putting them into array
@@ -213,7 +215,7 @@ function remove_obj_files()
     # counting the number of object files within directory
     num_obj_files=$(ls | grep "\b.o\b" | wc -l)
 
-    # if the number of object files is greater than 0
+    # if there are obj files
     if [ $num_obj_files -gt 0 ]
     then 
         # grabbing the name of the obj file and removing it
@@ -240,8 +242,7 @@ function evaluate_command()
     link_cmd="ld -m elf_i386 -o"
     link_cmd_other=""
 
-    # code below evaluates each character, after the first, in
-    # command in sends them to the "create_linking..." function
+    # going through each chracter in order to create the linking command
     for ((i = 1 ; i < $sz_of_input ; i++)); do
 
         local char=${char_input[$i]}
@@ -276,11 +277,12 @@ function execute_debug()
         # executes the linking command with the string created in "evaluate command" function
         eval "$link_cmd$link_cmd_other"
 
-        # determines if main out (executable) file was created
+        # determines if .out file was created
         local num_out_file=$(ls | grep "\b$main_file.out\b" | wc -l)
 
         if [ $num_out_file == 1 ]
         then 
+            # removes obj files once .out file was created
             remove_obj_files
             # if user chose 'e' then execute the main .out file
             if [ ${char_input[0]} == 'e' ]
@@ -298,6 +300,13 @@ function execute_debug()
     fi
 }
 
+function continue?()
+{
+    printf "\nPress ${BOLD}${YELW}Enter${EC} to continue: ${BOLD}${YELW}"
+    read -r answer; printf "${EC}"
+    if [[ $answer != '' ]]; then exit; fi
+}
+
 ### MAIN ###
 
 # Allows script to loop until user exits
@@ -306,10 +315,8 @@ function main()
     print_asm_files
     user_input
     execute_debug
-    
-    printf "\nPress ${BOLD}${YELW}Enter${EC} to continue: "
-    read -r answer
-    if [[ $answer != '' ]]; then exit; fi
+
+    continue?
     
     main
 }
