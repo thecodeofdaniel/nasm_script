@@ -48,10 +48,10 @@ function validate_each_character()
         done
 
         # if character is an integer and not a letter
-        if [[ $((char_input[$i])) == ${char_input[$i]} ]]; then
+        if [[ ${char_input[$i]} =~ ^[0-9]+$ ]]; then
 
             # makes sure that file picked is on the list
-            if [ ${char_input[$i]} -lt 1 ] || [ ${char_input[$i]} -gt $num_asm_files ]; then
+            if [ ${char_input[$i]} == 0 ] || [ ${char_input[$i]} -gt $num_asm_files ]; then
                 printf "${RED}${char_input[$i]} is not on the list${EC}\n"
                 user_input
             else 
@@ -89,7 +89,7 @@ function are_selected_files_valid()
         for ((i = 1 ; i < $sz_of_input ; i++)) 
         do
             # if character IS an integer
-            if [[ $((char_input[$i])) == ${char_input[$i]} ]]; then
+            if [[ ${char_input[$i]} =~ ^[0-9]+$ ]]; then
 
                 int=${char_input[$i]}
                 
@@ -161,7 +161,7 @@ function user_input()
     do
         # grabbing each character of user input and putting them into array
         printf "\nEnter: ${BOLD}${YELW}"
-        read -a arr             
+        read -r -a arr             
         printf "${EC}"
 
         # getting the number of characters from string besides 'space'
@@ -260,7 +260,7 @@ function evaluate_command()
 
         local char=${char_input[$i]}
 
-        if [[ $((char)) == $char ]]; then 
+        if [[ $char =~ ^[0-9]+$ ]]; then 
             int=$char
             create_linking_command "${asm_file[$int-1]}"
         fi
