@@ -31,22 +31,6 @@ function validate_each_character()
     # checks for duplicates and checks each character of command
     for ((i = 1 ; i < $sz_of_input ; i++))
     do
-        local counter=0
-
-        for (( j = 1 ; j < $sz_of_input ; j++))
-        do
-            # if there's a match add to the counter
-            if [ ${char_input[$i]} == ${char_input[$j]} ]; then
-                ((counter++))
-            fi
-
-            # if the counter is greater than 1 then ask for user input again
-            if [ $counter -gt 1 ]; then 
-                printf "${RED}Duplicate ${char_input[$i]}'s!${EC}\n"
-                user_input
-            fi
-        done
-
         # if character is an integer and not a letter
         if [[ ${char_input[$i]} =~ ^[0-9]+$ ]]; then
 
@@ -58,15 +42,13 @@ function validate_each_character()
                 # otherwise increment the file count
                 ((file_count++))
             fi
-        # if 'a' is in the command, set a_count = 1
+        # if 'a' is in the command increment a_counter
         elif [ "${char_input[$i]}" == 'a' ]; then 
-            a_count=1
+            ((a_count++))
         # if any other character besides 'l' is included, ask for user input again
-        else
-            if [ "${char_input[$i]}" != 'l' ] && [ "${char_input[$i]}" != '' ]; then 
-                printf "${RED}'${char_input[$i]}' is not allowed at position $(($i+1))${EC}\n"
-                user_input
-            fi
+        elif [ "${char_input[$i]}" != 'l' ] && [ "${char_input[$i]}" != '' ]; then 
+            printf "${RED}'${char_input[$i]}' is not allowed at position $(($i+1))${EC}\n"
+            user_input
         fi
 
     done
@@ -74,6 +56,10 @@ function validate_each_character()
     # if 'a' is chosen, but files are selected in command then ask for user input again
     if [ $a_count == 1 ] && [ $file_count -gt 0 ]; then 
         printf "${RED}Choosing 'a' will select all files${EC}\n"
+        user_input
+    # if there are multiple 'a's in command then ask for user input again
+    elif [ $a_count -gt 1 ]; then 
+        printf "${RED}Duplicate 'a's in command${EC}\n"
         user_input
     fi
       
