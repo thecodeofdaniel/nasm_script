@@ -171,6 +171,11 @@ function user_input()
         if [ $sz_of_input == 1 ] && [ "${arr[0]}" == 'c' ]; then
             clear
             print_asm_files
+        # Other wise if input is too small or too great, prompt error message
+        elif [ $sz_of_input -lt 2 ]; then
+            printf "${RED}Command should be greater than one character${EC}\n"
+        elif [ $sz_of_input -gt $(($num_asm_files+2)) ]; then
+            printf "${RED}Command should be less than $(($num_asm_files+3)) characters${EC}\n"
         fi
     done
 
