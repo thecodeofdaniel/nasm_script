@@ -309,7 +309,12 @@ function continue?()
 {
     printf "\nPress ${BOLD}${YELW}Enter${EC} to continue: ${BOLD}${YELW}"
     read -r answer; printf "${EC}"
-    if [[ $answer != '' ]]; then exit; fi
+    if [[ $answer != '' ]]; then 
+        printf "\e[1A"
+        exit
+    else 
+        printf "\e[2A"
+    fi
 }
 
 ### MAIN ###
@@ -326,4 +331,5 @@ function main()
     main
 }
 
+clear
 main
