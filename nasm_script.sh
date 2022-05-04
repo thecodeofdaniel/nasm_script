@@ -16,73 +16,80 @@ BLUE="\e[34m"
 
 function validate_each_character()
 {
-    # grabbing the array passed by arguement in function 'user_input'
-    char_input=("$@")
+    # local variables are visible to the functions they call 
+    local a_count=0
+    local errors=0
+    local file_count=0
 
     # checks for the first character
     if [ "${char_input[0]}" != 'e' ] && [ "${char_input[0]}" != 'd' ]; then
         printf "${RED}'e' or 'd' should be the first character${EC}\n"
-        user_input
+        ((errors++))
     fi
-    
-    local file_count=0
-    a_count=0
 
-    # Goes through each character in command 
+    # goes through the rest of the characters
     for ((i = 1 ; i < $sz_of_input ; i++))
     do
         # if character is an integer
         if [[ ${char_input[$i]} =~ ^[0-9]+$ ]]; then
 
-            # makes sure that file picked is on the list
+            # check if integer selected is on the list
             if [ ${char_input[$i]} == 0 ] || [ ${char_input[$i]} -gt $num_asm_files ]; then
                 printf "${RED}${char_input[$i]} is not on the list${EC}\n"
-                user_input
+                ((errors++))
             else 
                 # otherwise increment the file count
                 ((file_count++))
             fi
-        # if 'a' is in the command increment a_counter
-        elif [ "${char_input[$i]}" == 'a' ]; then 
-            ((a_count++))
-        # if any other character besides 'l' is included, ask for user input again
-        elif [ "${char_input[$i]}" != 'l' ]; then
-            printf "${RED}'${char_input[$i]}' is not allowed at position $(($i+1))${EC}\n"
-            user_input
+        # if character is NOT an integer
+        else 
+            # if 'a' is in the command increment a_count
+            if [ "${char_input[$i]}" == 'a' ]; then 
+                ((a_count++))
+            # Any other character besides 'l'
+            elif [ "${char_input[$i]}" != 'l' ]; then
+                printf "${RED}'${char_input[$i]}' is not allowed at position $(($i+1))${EC}\n"
+                ((errors++))
+            fi
         fi
-
     done
     
-    # if 'a' is chosen, but files are selected in command then ask for user input again
+    # if 'a' is chosen, but files are selected in command
     if [ $a_count == 1 ] && [ $file_count -gt 0 ]; then 
         printf "${RED}Choosing 'a' will select all files${EC}\n"
-        user_input
-    # if there are multiple 'a's in command then ask for user input again
+        ((errors++))
+    # if there are multiple 'a's in command
     elif [ $a_count -gt 1 ]; then 
         printf "${RED}Duplicate 'a's in command${EC}\n"
-        user_input
+        ((errors++))
     fi
-      
-    check_for_main
+
+    # if there are no errors continue to the next function
+    if [ $errors -gt 0 ]; then 
+        user_input
+    else
+        check_for_main
+    fi
 }
 
 function check_for_main()
 {
+    # This will keep track of the amount of main files in command
     local counter=0
 
-    # if 'a' WASN'T in command, check each file user picked for MAIN
+    # if 'a' WASN'T in command, check each file in command for main
     if [ $a_count == 0 ]; then 
         for ((i = 1 ; i < $sz_of_input ; i++)) 
         do
-            # if character IS an integer
+            # if character is an integer
             if [[ ${char_input[$i]} =~ ^[0-9]+$ ]]; then
 
                 int=${char_input[$i]}
                 
-                # checks if .asm file is a MAIN
+                # checks .asm file has "_start" text
                 check_for_start=$(cat "${asm_file[$int-1]}.asm" | grep "_start" | wc -l)
 
-                # increments counter if .asm file is MAIN
+                # increments counter if .asm file is a main file
                 if [ $check_for_start == 2 ]; then 
                     counter=$((counter+1)) 
                 fi      
@@ -90,27 +97,26 @@ function check_for_main()
         done
     fi
     
-    # if 'a' WAS in command check each file for MAIN file
+    # if 'a' WAS in command, check all .asm files in directory for main
     if [ $a_count == 1 ]; then 
     
         for ((i = 0 ; i < $num_asm_files ; i++))
         do
-            # checks if .asm file is a MAIN file
+            # checks .asm file has "_start" text
             check_for_start=$(cat "${asm_file[$i]}.asm" | grep "_start" | wc -l)
 
-            # increments counter if .asm file is MAIN file
+            # increments counter if .asm file is a main file
             if [ $check_for_start == 2 ]; then
                 counter=$((counter+1)) 
             fi
         done
     fi
 
-    # if there's no or too many MAIN files then ask for user input again
+    # if there's only one main file in command then continue to the next function
     if [ $counter == 0 ] || [ $counter -gt 1 ] ; then
         printf "${RED}Select one main program${EC}\n"
         user_input
     else    
-    # otherwise go to this function
         evaluate_command
     fi
 }
@@ -144,19 +150,18 @@ function user_input()
 {    
     # using while-loop because there is no do-while-loop in bash
     sz_of_input=0
-    local arr=()
     while [ $sz_of_input -lt 2 ] || [ $sz_of_input -gt $(($num_asm_files+2)) ]
     do
         # grabbing each character of user input and putting them into array
         printf "\nEnter: ${BOLD}${YELW}"
-        read -r -a arr             
+        read -r -a char_input             
         printf "${EC}"
 
         # getting the number of characters from string besides 'space'
-        sz_of_input=${#arr[@]}
+        sz_of_input=${#char_input[@]}
 
         # Adding the abilty to clear screen 
-        if [ $sz_of_input == 1 ] && [ "${arr[0]}" == 'c' ]; then
+        if [ $sz_of_input == 1 ] && [ "${char_input[0]}" == 'c' ]; then
             clear
             print_asm_files
         # Other wise if input is too small or too great, prompt error message
@@ -167,7 +172,7 @@ function user_input()
         fi
     done
 
-    validate_each_character "${arr[@]}"
+    validate_each_character
 }
 
 function create_linking_command()
