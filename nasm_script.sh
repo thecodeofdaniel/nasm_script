@@ -17,7 +17,6 @@ BLUE="\e[34m"
 function validate_each_character()
 {
     # local variables are visible to the functions they call 
-    local a_count=0
     local errors=0
     local file_count=0
 
@@ -41,28 +40,12 @@ function validate_each_character()
                 # otherwise increment the file count
                 ((file_count++))
             fi
-        # if character is NOT an integer
-        else 
-            # if 'a' is in the command increment a_count
-            if [ "${char_input[$i]}" == 'a' ]; then 
-                ((a_count++))
-            # Any other character besides 'l'
-            elif [ "${char_input[$i]}" != 'l' ]; then
-                printf "${RED}'${char_input[$i]}' is not allowed at position $(($i+1))${EC}\n"
-                ((errors++))
-            fi
+        # otherwise that character must only be 'l'
+        elif [ "${char_input[$i]}" != 'l' ]; then
+            printf "${RED}'${char_input[$i]}' is not allowed at position $(($i+1))${EC}\n"
+            ((errors++))
         fi
     done
-    
-    # if 'a' is chosen, but files are selected in command
-    if [ $a_count == 1 ] && [ $file_count -gt 0 ]; then 
-        printf "${RED}Choosing 'a' will select all files${EC}\n"
-        ((errors++))
-    # if there are multiple 'a's in command
-    elif [ $a_count -gt 1 ]; then 
-        printf "${RED}Duplicate 'a's in command${EC}\n"
-        ((errors++))
-    fi
 
     # if there are no errors continue to the next function
     if [ $errors -gt 0 ]; then 
@@ -77,8 +60,8 @@ function check_for_main()
     # This will keep track of the amount of main files in command
     local counter=0
 
-    # if 'a' WASN'T in command, check each file in command for main
-    if [ $a_count == 0 ]; then 
+    # if user selected files in command
+    if [ $file_count != 0 ]; then 
         for ((i = 1 ; i < $sz_of_input ; i++)) 
         do
             # if character is an integer
@@ -97,9 +80,10 @@ function check_for_main()
         done
     fi
     
-    # if 'a' WAS in command, check all .asm files in directory for main
-    if [ $a_count == 1 ]; then 
-    
+    # if command has no files selected
+    if [ $file_count == 0 ]; then 
+
+        # checking all .asm files in directory
         for ((i = 0 ; i < $num_asm_files ; i++))
         do
             # checks .asm file has "_start" text
@@ -126,9 +110,9 @@ function print_asm_files()
     # grabs the number of .asm file in current directory
     num_asm_files=$(ls | grep '\b.asm\b' | wc -l)
 
+    # If there are no .asm files in directory
     if [ $num_asm_files == 0 ]; then
-        printf "\n${BOLD}${RED}No .asm files here!${EC}\n"
-        exit
+        printf "${BOLD}${RED}No .asm files here!${EC}"; sleep 1; clear; exit
     fi
 
     # Displays user how to exit script
@@ -140,37 +124,26 @@ function print_asm_files()
     for ((i = 0 ; i < $num_asm_files ; i++)); do
         asm_file[$i]=$(ls | grep '\b.asm\b' | grep '.asm' -n | grep $(($i+1)) | cut -c 3-)
         asm_file[$i]=${asm_file[$i]%.*}                                                  
-        printf "${BOLD}${BLUE}$(($i+1))${EC}. ${asm_file[$i]}.asm\n"
+        printf "${BOLD}${BLUE}$(($i+1)).${EC} ${asm_file[$i]}.asm\n"
     done
 }
 
 function user_input()
 {    
-    # using while-loop because there is no do-while-loop in bash
-    sz_of_input=0
-    while [ $sz_of_input -lt 2 ] || [ $sz_of_input -gt $(($num_asm_files+2)) ]
-    do
-        # grabbing each character of user input and putting them into array
-        printf "\nEnter: ${BOLD}${YELW}"
-        read -r -a char_input             
-        printf "${EC}"
+    # grabbing each character of user input and putting them into array
+    printf "\nEnter: ${BOLD}${YELW}"
+    read -r -a char_input             
+    printf "${EC}"
 
-        # getting the number of characters from string besides 'space'
-        sz_of_input=${#char_input[@]}
+    # getting the number of characters from string besides 'space'
+    sz_of_input=${#char_input[@]}
 
-        # Adding the abilty to clear screen 
-        if [ $sz_of_input == 1 ] && [ "${char_input[0]}" == 'c' ]; then
-            clear
-            print_asm_files
-        # Other wise if input is too small or too great, prompt error message
-        elif [ $sz_of_input -lt 2 ]; then
-            printf "${RED}Command should be greater than one character${EC}\n"
-        elif [ $sz_of_input -gt $(($num_asm_files+2)) ]; then
-            printf "${RED}Command should be less than $(($num_asm_files+3)) characters${EC}\n"
-        fi
-    done
-
-    validate_each_character
+    # Adding the abilty to clear screen 
+    if [ $sz_of_input == 1 ] && [ "${char_input[0]}" == 'c' ]; then
+        clear; print_asm_files; user_input
+    else
+        validate_each_character
+    fi
 }
 
 function create_linking_command()
@@ -245,6 +218,12 @@ function evaluate_command()
     link_cmd="ld -m elf_i386 -o"
     link_cmd_other=""
 
+    if [ $file_count == 0 ]; then
+        for ((i = 0 ; i < $num_asm_files ; i++)); do
+            create_linking_command "${asm_file[$i]}" 
+        done
+    fi
+
     # going through each chracter in order to create the linking command
     for ((i = 1 ; i < $sz_of_input ; i++)); do
 
@@ -255,12 +234,6 @@ function evaluate_command()
             create_linking_command "${asm_file[$int-1]}"
         fi
         
-        if [ $char == 'a' ]; then
-            for ((j = 0 ; j < $num_asm_files ; j++)); do
-                create_linking_command "${asm_file[$j]}" 
-            done
-        fi
-
         if [ $char == 'l' ]; then 
             create_linking_command "$library_location"
         fi
@@ -331,5 +304,3 @@ function main()
 
 clear
 main
-
-# example I made some change
