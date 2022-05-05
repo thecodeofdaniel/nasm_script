@@ -116,7 +116,7 @@ function check_for_main()
     if [ $counter == 0 ] || [ $counter -gt 1 ] ; then
         printf "${RED}Select one main program${EC}\n"
         user_input
-    else    
+    else
         evaluate_command
     fi
 }
@@ -133,16 +133,14 @@ function print_asm_files()
 
     # Displays user how to exit script
     if [ $display_how_to_exit = true ]; then 
-        printf "\n${DIM}Exit the script with: ${BOLD}${YELW}Ctrl + C${EC}\n"
+        printf "${DIM}Exit the script with: ${BOLD}${YELW}Ctrl + C${EC}\n\n"
     fi
-
-    printf '\n'
 
     # puts the names of the .asm files in array and outputs list onto screen
     for ((i = 0 ; i < $num_asm_files ; i++)); do
         asm_file[$i]=$(ls | grep '\b.asm\b' | grep '.asm' -n | grep $(($i+1)) | cut -c 3-)
         asm_file[$i]=${asm_file[$i]%.*}                                                  
-        printf "${BOLD}${BLUE}$(($i+1)):${EC} ${asm_file[$i]}.asm\n"
+        printf "${BOLD}${BLUE}$(($i+1))${EC}. ${asm_file[$i]}.asm\n"
     done
 }
 
@@ -313,7 +311,7 @@ function continue?()
         printf "\e[1A"
         exit
     else 
-        printf "\e[2A"
+        printf "\e[1A"
     fi
 }
 
