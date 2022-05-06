@@ -278,14 +278,9 @@ function execute_debug()
 
 function continue?()
 {
-    printf "\nPress ${BOLD}${YELW}Enter${EC} to continue: ${BOLD}${YELW}"
-    read -r answer; printf "${EC}"
-    if [[ $answer != '' ]]; then 
-        printf "\e[1A"
-        exit
-    else 
-        printf "\e[1A"
-    fi
+    local input
+    printf "\nPress any key to continue: "; read -n 1 -r input
+    if [ "$input" == '' ]; then printf '\e[1A\e[K'; else echo; printf '\e[1A\e[K'; fi
 }
 
 ### MAIN ###
