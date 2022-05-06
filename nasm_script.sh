@@ -97,8 +97,11 @@ function check_for_main()
     fi
 
     # if there's only one main file in command then continue to the next function
-    if [ $counter == 0 ] || [ $counter -gt 1 ] ; then
-        printf "${RED}Select one main program${EC}\n"
+    if [ $counter == 0 ]; then
+        printf "${RED}Select one main file${EC}\n"
+        user_input
+    elif [ $counter -gt 1 ]; then
+        printf "${RED}You have selected $counter main files, only select one${EC}\n"
         user_input
     else
         evaluate_command
@@ -139,7 +142,7 @@ function user_input()
     sz_of_input=${#char_input[@]}
 
     # Adding the abilty to clear screen 
-    if [ $sz_of_input == 1 ] && [ "${char_input[0]}" == 'c' ]; then
+    if [ $sz_of_input == 0 ] && [ "${char_input[0]}" == 'c' ]; then
         clear; print_asm_files; user_input
     else
         validate_each_character
