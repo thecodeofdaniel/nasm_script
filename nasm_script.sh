@@ -276,13 +276,6 @@ function execute_debug()
     fi
 }
 
-function continue?()
-{
-    local input
-    printf "\nPress any key to continue: "; read -n 1 -r input
-    if [ "$input" == '' ]; then printf '\e[1A\e[K'; else echo; printf '\e[1A\e[K'; fi
-}
-
 ### MAIN ###
 
 # Allows script to loop until user exits
@@ -292,9 +285,7 @@ function main()
     user_input
     execute_debug
 
-    continue?
-    
-    main
+    echo; main
 }
 
 clear
