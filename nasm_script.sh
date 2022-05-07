@@ -4,6 +4,7 @@ library_location="/home/$(whoami)/Desktop/csci150_AssemblyLanguage/z_library/lib
 library_location="${library_location%.asm}"
 
 display_how_to_exit=true
+clear_after_exit=false
 
 # Colors/TextFormat for when outputting text
 EC="\e[0m"
@@ -149,9 +150,7 @@ function print_asm_files()
 function user_input()
 {    
     # grabbing each character of user input and putting them into array
-    printf "\nEnter: ${BOLD}${YELW}"
-    read -r -a char_input             
-    printf "${EC}"
+    printf "\nEnter:${BOLD}${YELW}"; read -r -p ' ' -a char_input; printf "${EC}"
 
     # getting the number of characters from string besides 'space'
     sz_of_input=${#char_input[@]}
@@ -302,7 +301,20 @@ function execute_debug()
     fi
 }
 
+function exit_script()
+{
+    # This will remove the "Enter: " prompt
+    echo; printf '\033[1A\033[K' 
+    # If user chooses so, they can clear screen when exiting script
+    if [ $clear_after_exit = true ]; then clear; fi
+    exit 0
+}
+
 ### MAIN ###
+
+# trap keyword catches signals that happen during execution
+# Ctrl + C signals SIGINT 
+trap exit_script SIGINT
 
 # Allows script to loop until user exits
 function main()
