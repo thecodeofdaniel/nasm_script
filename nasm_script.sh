@@ -104,10 +104,25 @@ function check_for_main()
         printf "${RED}You have selected $counter main files, only select one${EC}\n"
         user_input
     else
-        evaluate_command
+        # saving the command and file count in case user wants to run the program again
+        prev_file_count=$file_count; prev_char_input=("${char_input[@]}")
+        evaluate_command "$file_count" "${char_input[@]}"
     fi
 }
-
+function prev_cmnd()
+{
+    if [ ${#prev_char_input[@]} -gt 0 ]; then
+        printf '\033[1A\033[K' # removing the empty "Enter: " line
+        # displays the previous command
+        printf "Enter: ${BOLD}${DIM}${YELW}"; echo -n ${prev_char_input[@]}; printf "${EC}\n"
+        # sends the command the evaluate_command function skipping the 'validate_each_character'
+        evaluate_command "$prev_file_count" "${prev_char_input[@]}"
+    else
+        # if the previous command is empty
+        printf "${RED}No previous command${EC}\n"
+        user_input
+    fi
+}
 function print_asm_files()
 {
     # grabs the number of .asm file in current directory
@@ -141,8 +156,11 @@ function user_input()
     # getting the number of characters from string besides 'space'
     sz_of_input=${#char_input[@]}
 
-    # Adding the abilty to clear screen 
-    if [ $sz_of_input == 0 ] && [ "${char_input[0]}" == 'c' ]; then
+    # being able to use the previous command by leaving the command blank
+    if [ $sz_of_input == 0 ]; then
+        prev_cmnd
+    # adding the abilty to clear screen 
+    elif [ $sz_of_input == 1 ] && [ "${char_input[0]}" == 'c' ]; then
         clear; print_asm_files; user_input
     else
         validate_each_character
@@ -217,6 +235,11 @@ function remove_previous_out_file()
 
 function evaluate_command()
 {
+    # accepting the arguements passed in
+    file_count=$1
+    shift
+    char_input=("$@")
+
     # creating a string for the link command
     link_cmd="ld -m elf_i386 -o"
     link_cmd_other=""
@@ -228,7 +251,7 @@ function evaluate_command()
     fi
 
     # going through each chracter in order to create the linking command
-    for ((i = 1 ; i < $sz_of_input ; i++)); do
+    for ((i = 1 ; i < ${#char_input[@]} ; i++)); do
 
         local char=${char_input[$i]}
 
