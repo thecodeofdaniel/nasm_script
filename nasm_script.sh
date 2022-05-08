@@ -6,10 +6,8 @@ library_location="/home/$(whoami)/Desktop/csci150_AssemblyLanguage/z_library/lib
 let_script_find_library=false
 lib_name="library.asm"
 
-# home/user1/Desktop/csci150_AssemblyLanguage/z_library/library
-
+# Set to false if you want to remove "Exit the Script with: Ctrl + C" line
 display_how_to_exit=true
-clear_after_exit=false
 
 # Colors/TextFormat for when outputting text
 EC="\e[0m"
@@ -324,12 +322,17 @@ function execute_debug()
     fi
 }
 
-function exit_script()
+function exit_script() 
 {
-    # This will remove the "Enter: " prompt
-    echo; printf '\033[1A\033[K'  
-    # If user chooses so, they can clear screen when exiting script
-    if [ $clear_after_exit = true ]; then clear; fi
+    # setting the amount of text to be removed
+    if [ $display_how_to_exit = true ]; then local num=7; else local num=5; fi
+
+    # This will remove the text from output  
+    echo 
+    for i in $(seq 0 $num); do
+        printf "\033[1A\033[K"
+    done
+
     exit 0
 }
 
