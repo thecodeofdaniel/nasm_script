@@ -1,7 +1,12 @@
 #!/bin/bash
 
 library_location="/home/$(whoami)/Desktop/csci150_AssemblyLanguage/z_library/library.asm"
-library_location="${library_location%.asm}"
+
+# If set to true then give name of .asm file
+let_script_find_library=false
+lib_name="library.asm"
+
+# home/user1/Desktop/csci150_AssemblyLanguage/z_library/library
 
 display_how_to_exit=true
 clear_after_exit=false
@@ -232,6 +237,23 @@ function remove_previous_out_file()
     fi
 }
 
+function find_library()
+{
+    # finding the library file in the user's home directory
+    if [ $let_script_find_library = true ]; then
+        # grabbing the home directory 
+        home="/home/$(whoami)"
+        # more efficient way of cd'ing to the home dir
+        pushd $home > /dev/null
+        library_location=$(find $home -type f -name $lib_name -not -path "./.local/share/Trash/*" | cut -f 1 -d '.')
+        # returning to the previous dir
+        popd > /dev/null
+    # otherwise use the location given on line 3 of the script
+    else 
+        library_location="${library_location%.asm}"
+    fi
+}
+
 function evaluate_command()
 {
     # accepting the arguements passed in
@@ -259,7 +281,8 @@ function evaluate_command()
             create_linking_command "${asm_file[$int-1]}"
         fi
         
-        if [ $char == 'l' ]; then 
+        if [ $char == 'l' ]; then
+            find_library 
             create_linking_command "$library_location"
         fi
 
@@ -304,7 +327,7 @@ function execute_debug()
 function exit_script()
 {
     # This will remove the "Enter: " prompt
-    echo; printf '\033[1A\033[K' 
+    echo; printf '\033[1A\033[K'  
     # If user chooses so, they can clear screen when exiting script
     if [ $clear_after_exit = true ]; then clear; fi
     exit 0
