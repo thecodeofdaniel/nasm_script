@@ -324,12 +324,13 @@ function execute_debug()
 
 function exit_script() 
 {
+    local num=$num_asm_files
     # setting the amount of text to be removed
-    if [ $display_how_to_exit = true ]; then local num=7; else local num=5; fi
+    if [ $display_how_to_exit = true ]; then num=$((num+4)); else num=$((num+2)); fi
 
     # This will remove the text from output  
     echo 
-    for i in $(seq 0 $num); do
+    for i in $(seq 1 $num); do
         printf "\033[1A\033[K"
     done
 
