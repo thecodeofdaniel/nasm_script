@@ -5,9 +5,11 @@ library_location="/home/$(whoami)/Desktop/csci150_AssemblyLanguage/z_library/lib
 # If set to true then give name of .asm file
 let_script_find_library=false
 lib_name="library.asm"
-
 # Set to false if you want to remove "Exit the Script with: Ctrl + C" line
 display_how_to_exit=true
+# Set to true to both if you want to keep object and .out files
+keep_obj_files=false 
+keep_out_files=false
 
 # Colors/TextFormat for when outputting text
 EC="\e[0m"
@@ -304,8 +306,6 @@ function execute_debug()
 
         if [ $num_out_file == 1 ]
         then 
-            # removes obj files once .out file was created
-            remove_obj_files
             # if user chose 'e' then execute the main .out file
             if [ ${char_input[0]} == 'e' ]
             then
@@ -320,6 +320,10 @@ function execute_debug()
             fi
         fi
     fi
+
+    # user decides whether or not they want to keep the obj and .out files
+    if [ $keep_obj_files = false ]; then remove_obj_files; fi
+    if [ $keep_out_files = false ]; then remove_previous_out_file; fi
 }
 
 function exit_script() 
