@@ -8,7 +8,7 @@ lib_name="library.asm"
 # Set to false if you want to remove "Exit the Script with: Ctrl + C" line
 display_how_to_exit=true
 # Set to true to both if you want to keep object and .out files
-keep_obj_files=false 
+keep_obj_files=false
 keep_out_files=false
 
 # Colors/TextFormat for when outputting text
@@ -200,18 +200,20 @@ function create_linking_command()
 
 function remove_obj_files()
 {
-    # counting the number of object files within directory
-    num_obj_files=$(ls | grep "\b.o\b" | wc -l)
+    # removes the obj files selected from user after execution or debugging
+    for ((i = 1 ; i < ${#char_input[@]} ; i++)); do
+        if [[ ${char_input[$i]} =~ ^[0-9]+$ ]]; then
 
-    # if there are obj files
-    if [ $num_obj_files -gt 0 ]
-    then 
-        # grabbing the name of the obj file and removing it
-        for ((i = 0 ; i < ${num_obj_files} ; i++)); do
-            o_file=$(ls | grep "\b.o\b" | grep '.o' -n | grep '1:' | cut -c 3-)
-            rm "$o_file"
-        done
-    fi
+            local int=${char_input[$i]}
+
+            local obj_file=$(ls | grep "\b${asm_file[$int-1]}.o\b" | wc -l)
+            if [ $obj_file == 1 ]; then rm "${asm_file[$int-1]}.o"; fi
+        else 
+
+            local obj_file=$(ls ${library_location%/*} | grep "\b${library_location##*/}.o\b" | wc -l)
+            if [ $obj_file == 1 ]; then rm "$library_location.o"; fi
+        fi
+    done
 }
 
 function remove_previous_out_file()
