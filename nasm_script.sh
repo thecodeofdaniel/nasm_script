@@ -53,6 +53,12 @@ function validate_each_character()
         fi
     done
 
+    if [ $file_count == 0 ]; then 
+        for ((i = 0 ; i < $num_asm_files ; i++)); do 
+            char_input[$sz_of_input+$i]=$(($i+1))
+        done
+    fi
+
     # if there are no errors continue to the next function
     if [ $errors -gt 0 ]; then 
         user_input
@@ -66,41 +72,22 @@ function check_for_main()
     # This will keep track of the amount of main files in command
     local counter=0
 
-    # if user selected files in command
-    if [ $file_count != 0 ]; then 
-        for ((i = 1 ; i < $sz_of_input ; i++)) 
-        do
-            # if character is an integer
-            if [[ ${char_input[$i]} =~ ^[0-9]+$ ]]; then
+    for ((i = 1 ; i < ${#char_input[@]} ; i++)) 
+    do
+        # if character is an integer
+        if [[ ${char_input[$i]} =~ ^[0-9]+$ ]]; then
 
-                int=${char_input[$i]}
-                
-                # checks .asm file has "_start" text
-                check_for_start=$(cat "${asm_file[$int-1]}.asm" | grep "_start" | wc -l)
-
-                # increments counter if .asm file is a main file
-                if [ $check_for_start == 2 ]; then 
-                    counter=$((counter+1)) 
-                fi      
-            fi
-        done
-    fi
-    
-    # if command has no files selected
-    if [ $file_count == 0 ]; then 
-
-        # checking all .asm files in directory
-        for ((i = 0 ; i < $num_asm_files ; i++))
-        do
+            int=${char_input[$i]}
+            
             # checks .asm file has "_start" text
-            check_for_start=$(cat "${asm_file[$i]}.asm" | grep "_start" | wc -l)
+            check_for_start=$(cat "${asm_file[$int-1]}.asm" | grep "_start" | wc -l)
 
             # increments counter if .asm file is a main file
-            if [ $check_for_start == 2 ]; then
+            if [ $check_for_start == 2 ]; then 
                 counter=$((counter+1)) 
-            fi
-        done
-    fi
+            fi      
+        fi
+    done
 
     # if there's only one main file in command then continue to the next function
     if [ $counter == 0 ]; then
@@ -110,9 +97,9 @@ function check_for_main()
         printf "${RED}You have selected $counter main files, only select one${EC}\n"
         user_input
     else
-        # saving the command and file count in case user wants to run the program again
-        prev_file_count=$file_count; prev_char_input=("${char_input[@]}")
-        evaluate_command "$file_count" "${char_input[@]}"
+        # saving the command in case user wants to run the program again
+        prev_char_input=("${char_input[@]}")
+        evaluate_command "${char_input[@]}"
     fi
 }
 function prev_cmnd()
@@ -122,7 +109,7 @@ function prev_cmnd()
         # displays the previous command
         printf "Enter: ${BOLD}${DIM}${YELW}"; echo -n ${prev_char_input[@]}; printf "${EC}\n"
         # sends the command the evaluate_command function skipping the 'validate_each_character'
-        evaluate_command "$prev_file_count" "${prev_char_input[@]}"
+        evaluate_command "${prev_char_input[@]}"
     else
         # if the previous command is empty
         printf "${RED}No previous command${EC}\n"
@@ -256,20 +243,11 @@ function find_library()
 
 function evaluate_command()
 {
-    # accepting the arguements passed in
-    file_count=$1
-    shift
     char_input=("$@")
 
     # creating a string for the link command
     link_cmd="ld -m elf_i386 -o"
     link_cmd_other=""
-
-    if [ $file_count == 0 ]; then
-        for ((i = 0 ; i < $num_asm_files ; i++)); do
-            create_linking_command "${asm_file[$i]}" 
-        done
-    fi
 
     # going through each chracter in order to create the linking command
     for ((i = 1 ; i < ${#char_input[@]} ; i++)); do
