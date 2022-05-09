@@ -24,7 +24,7 @@ function validate_each_character()
 {
     # local variables are visible to the functions they call 
     local errors=0
-    local file_count=0
+    local sel_file_count=0
 
     # checks for the first character
     if [ "${char_input[0]}" != 'e' ] && [ "${char_input[0]}" != 'd' ]; then
@@ -44,7 +44,7 @@ function validate_each_character()
                 ((errors++))
             else 
                 # otherwise increment the file count
-                ((file_count++))
+                ((sel_file_count++))
             fi
         # otherwise that character must only be 'l'
         elif [ "${char_input[$i]}" != 'l' ]; then
@@ -53,7 +53,7 @@ function validate_each_character()
         fi
     done
 
-    if [ $file_count == 0 ]; then 
+    if [ $sel_file_count == 0 ]; then 
         for ((i = 0 ; i < $num_asm_files ; i++)); do 
             char_input[$sz_of_input+$i]=$(($i+1))
         done
@@ -173,28 +173,27 @@ function create_linking_command()
     # this finds which file is MAIN and determines the name of the .out file
     check_for_start=$(cat "$file_name.asm" | grep '_start' | wc -l)
 
-    # if main file is found then place them first in linking command
+    # if main file is found then set that name to be the executable
     if [ $check_for_start == 2 ]; then 
         main_file=$file_name
         link_cmd+=" '$main_file'.out"
-        link_cmd+=" '$main_file'.o"
+    fi 
+
+    # this checks if the obj file was created, if it was then o_file_created is set to 1
+    if [ "$file_name" == "$library_location" ]; then
+        o_file_created=$(ls "${library_location%/*}" | grep "\b${library_location##*/}.o\b" | wc -l)
     else 
+        o_file_created=$(ls | grep "\b$file_name.o\b" | wc -l)
+    fi
 
-        # the following code determines if object file was created...
-        if [ "$file_name" == "$library_location" ]
-        then
-            library_dir=${library_location%/*}
-            library_file=${library_location##*/} 
+    # if obj files was created then increment num_obj_files
+    if [ $o_file_created == 1 ]; then ((num_obj_files++)); fi
 
-            o_file_created=$(ls "$library_dir" | grep "\b$library_file.o\b" | wc -l)
-        else 
-            o_file_created=$(ls | grep "\b$file_name.o\b" | wc -l)
-        fi
-
-        # if so, then put it in the linking command's other half
-        if [ $o_file_created == 1 ]; then 
-            link_cmd_other+=" '$file_name'.o"
-        fi
+    # this determines the string on the linking command
+    if [ $check_for_start == 2 ]; then 
+        link_cmd+=" '$file_name'.o"
+    else
+        link_cmd_other+=" '$file_name'.o"
     fi
 }
 
@@ -219,11 +218,8 @@ function remove_obj_files()
 function remove_previous_out_file()
 {
     # code below deletes the previous main .out file if there was one created
-    local num_out_file=$(ls | grep "\b$main_file.out\b" | wc -l) 
-
-    if [ $num_out_file == 1 ]; then 
-        rm "$main_file.out"; 
-    fi
+    local out_file=$(ls | grep "\b$main_file.out\b" | wc -l) 
+    if [ $out_file == 1 ]; then rm "$main_file.out"; fi
 }
 
 function find_library()
@@ -250,6 +246,7 @@ function evaluate_command()
     # creating a string for the link command
     link_cmd="ld -m elf_i386 -o"
     link_cmd_other=""
+    num_obj_files=0
 
     # going through each chracter in order to create the linking command
     for ((i = 1 ; i < ${#char_input[@]} ; i++)); do
@@ -273,18 +270,15 @@ function execute_debug()
 {
     remove_previous_out_file
 
-    # determines if main object file was created
-    local main_obj_file_created=$(ls | grep "\b$main_file.o\b" | wc -l)
-
-    if [ $main_obj_file_created == 1 ]
+    if [ $num_obj_files == $((${#char_input[@]}-1)) ]
     then 
         # executes the linking command with the string created in "evaluate command" function
         eval "$link_cmd$link_cmd_other"
 
         # determines if .out file was created
-        local num_out_file=$(ls | grep "\b$main_file.out\b" | wc -l)
+        local out_file=$(ls | grep "\b$main_file.out\b" | wc -l)
 
-        if [ $num_out_file == 1 ]
+        if [ $out_file == 1 ]
         then 
             # if user chose 'e' then execute the main .out file
             if [ ${char_input[0]} == 'e' ]
