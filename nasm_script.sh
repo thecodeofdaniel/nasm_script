@@ -1,11 +1,11 @@
 #!/bin/bash
 
-library_location="/home/$(whoami)/Desktop/csci150_AssemblyLanguage/z_library/library.asm"
+library_location="$HOME/Desktop/csci150_AssemblyLanguage/z_library/library.asm"
 
-# If set to true then give name of .asm file
+# If set to true then give name of your library .asm file
 let_script_find_library=false
 lib_name="library.asm"
-# Set to false if you want to remove "Exit the Script with: Ctrl + C" line
+# Set to false if you want to remove "Exit the script with: Ctrl + C" line
 display_how_to_exit=true
 # Set to true to both if you want to keep object and .out files
 keep_obj_files=false
@@ -226,13 +226,7 @@ function find_library()
 {
     # finding the library file in the user's home directory
     if [ $let_script_find_library = true ]; then
-        # grabbing the home directory 
-        home="/home/$(whoami)"
-        # more efficient way of cd'ing to the home dir
-        pushd $home > /dev/null
-        library_location=$(find $home -type f -name $lib_name -not -path "./.local/share/Trash/*" | cut -f 1 -d '.')
-        # returning to the previous dir
-        popd > /dev/null
+        library_location=$(find $HOME -type f -name $lib_name -not -path "./.local/share/Trash/*" | cut -f 1 -d '.')
     # otherwise use the location given on line 3 of the script
     else 
         library_location="${library_location%.asm}"
