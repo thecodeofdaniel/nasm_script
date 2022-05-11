@@ -98,7 +98,11 @@ function check_for_main()
         user_input
     else
         # saving the command in case user wants to run the program again
+        history -s "${char_input[@]}"
+        HISTCONTROL=ignoredups:erasedups
+
         prev_char_input=("${char_input[@]}")
+
         evaluate_command "${char_input[@]}"
     fi
 }
@@ -142,7 +146,7 @@ function print_asm_files()
 function user_input()
 {    
     # grabbing each character of user input and putting them into array
-    printf "\nEnter:${BOLD}${YELW}"; read -r -p ' ' -a char_input; printf "${EC}"
+    echo; read -r -e -p $'Enter: \e[1m\e[33m' -a char_input; printf "${EC}"    
 
     # getting the number of characters from string besides 'space'
     sz_of_input=${#char_input[@]}
