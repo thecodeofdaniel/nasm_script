@@ -5,6 +5,8 @@ library_location="$HOME/Desktop/csci150_AssemblyLanguage/z_library/library.asm"
 # If set to true then give name of your library .asm file
 let_script_find_library=false
 lib_name="library.asm"
+# set to true if you want to save your inputs even after exiting script
+create_input_history=false
 # Set to false if you want to remove "Exit the script with: Ctrl + C" line
 display_how_to_exit=true
 # Set to true to both if you want to keep object and .out files
@@ -127,7 +129,7 @@ function print_asm_files()
 
     # If there are no .asm files in directory
     if [ $num_asm_files == 0 ]; then
-        printf "${BOLD}${RED}No .asm files here!${EC}"; sleep 1; clear; exit
+        printf "${BOLD}${RED}No .asm files here!${EC}"; sleep 1; clear; exit 0
     fi
 
     # Displays user how to exit script
@@ -157,6 +159,8 @@ function user_input()
     # adding the abilty to clear screen 
     elif [ $sz_of_input == 1 ] && [ "${char_input[0]}" == 'c' ]; then
         clear; print_asm_files; user_input
+    elif [ $sz_of_input == 1 ] && [ "${char_input[0]}" == 'ch' ]; then 
+        history -c; printf "${RED}Cleared input history${EC}\n\n"; print_asm_files; user_input
     else
         validate_each_character
     fi
@@ -299,16 +303,20 @@ function execute_debug()
 }
 
 function exit_script() 
-{
+{    
     local num=$num_asm_files
+
     # setting the amount of text to be removed
     if [ $display_how_to_exit = true ]; then num=$((num+4)); else num=$((num+2)); fi
 
-    # This will remove the text from output  
+    # This will remove the text from output (the enter prompt and list of files) 
     echo 
     for i in $(seq 1 $num); do
         printf "\033[1A\033[K"
     done
+
+    # this will write the user's input history
+    if [ $create_input_history = true ]; then history -w; fi
 
     exit 0
 }
@@ -318,6 +326,9 @@ function exit_script()
 # trap keyword catches signals that happen during execution
 # Ctrl + C signals SIGINT 
 trap exit_script SIGINT
+
+# this will read user's input history which enables user to use the up/down array keys
+if [ $create_input_history = true ]; then HISTCONTROL=erasedups; history -r; fi 
 
 # Allows script to loop until user exits
 function main()
