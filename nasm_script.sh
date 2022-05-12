@@ -154,13 +154,15 @@ function user_input()
     sz_of_input=${#char_input[@]}
 
     # being able to use the previous command by leaving the command blank
-    if [ $sz_of_input == 0 ]; then
+    if   [ $sz_of_input == 0 ]; then
         prev_cmnd
-    # adding the abilty to clear screen 
-    elif [ $sz_of_input == 1 ] && [ "${char_input[0]}" == 'c' ]; then
-        clear; print_asm_files; user_input
-    elif [ $sz_of_input == 1 ] && [ "${char_input[0]}" == 'ch' ]; then 
-        history -c; printf "${RED}Cleared input history${EC}\n\n"; print_asm_files; user_input
+    elif [ $sz_of_input == 1 ]; then 
+        local bool=false
+        if   [ "${char_input[0]}" == 'c'  ]; then clear; bool=true;
+        elif [ "${char_input[0]}" == 'ch' ]; then history -c; printf "${RED}Cleared input history${EC}\n\n"; bool=true; 
+        elif [ "${char_input[0]}" == 'h'  ]; then history; echo; bool=true; fi
+
+        if [ $bool = true ]; then print_asm_files; user_input; else validate_each_character; fi
     else
         validate_each_character
     fi
