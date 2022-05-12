@@ -7,23 +7,23 @@ $ cd ~/Downloads
 ```
 Run this command to list all files with their file permissions
 ```
-$ ls -lAh
+$ ls -l
 ```
 You'll see this line
 
-![Screenshot from 2022-04-15 08-25-33](https://user-images.githubusercontent.com/100104016/163589346-6ca95d2a-e212-4c0c-a65f-968d69fb9cdd.png)
+![non_exe_script](https://user-images.githubusercontent.com/100104016/168086026-d7bfea17-8389-4d54-acb5-988b20a27ced.png)
 
 Run this command to change the script.sh file permissions
 ```
-$ chmod +x script.sh
+$ chmod +x nasm_script.sh
 ```
 Run this command again
 ```
-$ ls -lAh
+$ ls -l
 ```
 You'll now see this line
 
-![Screenshot from 2022-04-15 08-29-31](https://user-images.githubusercontent.com/100104016/163590031-4fd33693-7d31-4dda-8b70-f1b11616bd28.png)
+![exe_script](https://user-images.githubusercontent.com/100104016/168086118-0ac63b7e-0f16-4b09-882b-11d4980c2259.png)
 
 This file is now executable (note: the file will be highlighted in green to let you know also)
 
@@ -46,7 +46,7 @@ $ ./script.sh
 When you run the script you will be prompted with
 
 ```
-You can always exit the script with: Ctrl + C
+Exit the script with: Ctrl + C
 
 1: asm_file1.asm
 2: asm_file2.asm
@@ -56,17 +56,24 @@ Enter:
 ```
 You only have to enter one command for this script
 
-This command should only receive characters with space in between each one
-
 ### Example
 
 ```
 Enter: e 1 2
 ```
+or 
+```
+Enter: d 1 2
+```
+
 ### Explanation: 
 
 `
-e = execute the following...
+e = execute
+`
+| 
+`
+d = debug
 `
 
 `
@@ -77,65 +84,117 @@ e = execute the following...
 2 = the second file listed in prompt
 `
 
-The order in which you put the integers does not matter, so I could've instead put 
+The order in which you put the files does not matter, so I could've instead put 
 
 ```
 Enter: e 2 1
 ```
 
-Any other characters do matter however, these are: `e` `d` `a` `l`
+However, your first character should always be: `e` or `d`
+
+
+Another character that is optional in your command is: `l`
 
 `
-e = execute the following...
+l = the 'l'ibrary file located in some other directory
 `
 
-`
-d = debug the following...
-`
+Rather than dragging your library file into the directory your working in, you can leave it someplace else and your program will still be able to run
 
-`
-a = include 'a'll files listed in prompt
-`
+More info about the `l` command below 
 
-`
-l = include 'l'ibrary file located in some other directory
-`
+### Shortcut:
 
-### Order of characters: 
+Entering a command with no selected files from the list will assume that you want all files within the current directory to be executed or debugged
 
+#### Example
+```
+Enter: e
+```
+is the same as 
 
-Your first character should always be: `e` or `d`
-
-The next character(s) should be an integer(s), however if you would like to include all files listed: `a`
-
-The last character is not necessary but if you would like to include your library located in some other directory with all of your procedures: `l`
-
-#### Note:
-
-If at anytime you enter the command in the wrong order, you will be prompted with what you should enter colored in red and be able to try again :)
+```
+Enter: e 1 2 3
+```
+The same goes for debugging: `d` 
 
 ## Using the ``l`` command
 
-If you ever use the `l` command
+If you ever use the `l` command you have two options: 
+
+* 1: Give the location of your library file
+
+* 2: Let the script find your library file
+
+### Option 1:
 
 Make sure to give its location along with it's file name with the .asm extension in ``line 3`` of the script 
 
-### Example
+#### Example
 
 ```
-3   library_location="/home/$(whoami)/Desktop/csci150_AssemblyLanguage/library/library.asm"
+3   library_location="$HOME/Desktop/csci150_AssemblyLanguage/z_library/library.asm"
 ```
 
-#### Note: This command prints the effective username of the current user
+### Option 2:
+
+Set ``line 6`` to true 
 
 ```
-$ whoami
+6   let_script_find_library=true
 ```
+Give the name of your library file on ``line 7``
+
+```
+7   lib_name="library.asm"
+```
+
+Check to see if any other files in home your directory have the same name, there should only be 1 output
+
+```
+$ find $HOME -type f -name <insert_library_name.asm> -not -path "./.local/share/Trash/*"
+```
+
+If there's more than one output, rename your library with a unique one such as
+
+```
+7   lib_name="library_for_script.asm"
+```
+
+# Other Commands: 
+
+These commands are not required to run your program but they are convenient 
+
+`
+<empty> = execute/debug the last acceptable command of that session
+`
+
+:arrow_up_down: keys
+`
+= go through user input history
+`
+
+`
+h = display user input history
+`
+
+`
+c = clear screen
+`
+
+`
+ch = clear user input history
+`
+
+
 
 # Video Examples: 
 
-https://user-images.githubusercontent.com/100104016/164873359-68bdf07d-bb88-40f4-b761-cea764be82e2.mp4
+https://user-images.githubusercontent.com/100104016/168119627-6143bba3-99f0-44da-a8b0-796f1aaf9726.mp4
 
 
-https://user-images.githubusercontent.com/100104016/164873365-0f1be417-ca41-4fa5-a0d4-0ff48ef88f47.mp4
+https://user-images.githubusercontent.com/100104016/168119679-3532adcb-e064-4fcb-8123-386a6ea7d6d8.mp4
+
+
+https://user-images.githubusercontent.com/100104016/168119711-e74d171f-24da-4bbf-9c98-3e4a03a2198f.mp4
 
