@@ -1,6 +1,6 @@
 #!/bin/bash
 
-lib_dir="$HOME/Desktop/csci150_AssemblyLanguage/z_library"
+lib_dir="$HOME/PATH/TO/LIBRARY/FOLDER"
 
 # set to true if you want to save your inputs even after exiting script
 create_input_history=false
@@ -32,7 +32,7 @@ function validate_each_character()
 
     # checks the rest of the characters
     for ((i = 1 ; i < $sz_of_input ; i++)); do
-        # if character is an integer
+        # character must be an integer
         if [[ ${char_input[$i]} =~ ^[0-9]+$ ]]; then
 
             # check if integer selected is on the list
@@ -41,8 +41,6 @@ function validate_each_character()
             else 
                 ((sel_file_count++))
             fi
-        # # otherwise that character must only be 'l'
-        # elif [ "${char_input[$i]}" != 'l' ]; then
         else
             printf "${RED}'${char_input[$i]}' is not allowed at position $(($i+1))${EC}\n"; ((errors++))
         fi
@@ -199,12 +197,17 @@ function remove_obj_files()
 
             local obj_file=$(ls | grep "\b${asm_file[$int-1]}.o\b" | wc -l)
             if [ $obj_file == 1 ]; then rm "${asm_file[$int-1]}.o"; fi
-        # else 
-        #     # removes the object file from library file
-        #     local obj_file=$(ls ${library_location%/*} | grep "\b${library_location##*/}.o\b" | wc -l)
-        #     if [ $obj_file == 1 ]; then rm "$library_location.o"; fi
         fi
     done
+
+    if [ $lib_count -gt 0 ]; then 
+        local num_obj_files=$(ls $lib_dir | grep "\b.o\b" | wc -l)
+        for ((i = 0 ; i < $num_obj_files ; i++)); do
+            local obj_file=$(ls $lib_dir | grep "\b.o\b" | grep ".o" -n | grep 1 | cut -c 3-) 
+            local obj_file=$(find $lib_dir -type f -name $obj_file -not -path "$HOME/.local/share/Trash/*")
+            rm $obj_file
+        done
+    fi
 }
 
 function remove_previous_out_file()
@@ -216,23 +219,24 @@ function remove_previous_out_file()
 
 function find_library()
 {
+    # getting the number of libraries declared by user in main
     lib_count=$(cat "$main_file.asm" | grep -w "lib:" | wc -l)
 
     if [ $lib_count -gt 0 ]; then 
-        for ((i = 1 ; i <= $lib_count ; i++)); do 
+        for ((i = 1 ; i <= $lib_count ; i++))
+        do 
+            # grab the name of the library file
             lib_name=$(cat "$main_file.asm" | grep -w "lib:" | grep "lib:" -n | grep $i | awk '{print $3}')
+            # get the path to the file
             library_location=$(find $lib_dir -type f -name $lib_name -not -path "$HOME/.local/share/Trash/*" | cut -f 1 -d '.')
-            create_linking_command "$library_location"
+            # if file is not found in directory declared then throw error message
+            if [ "$library_location" == "" ]; then
+                printf "${RED}'$lib_name' was not found ${EC}\n"
+            else 
+                create_linking_command "$library_location"
+            fi
         done
     fi 
-
-    # # finding the library file in the user's home directory
-    # if [ $let_script_find_library = true ]; then
-    #     library_location=$(find $HOME -type f -name $lib_name -not -path "./.local/share/Trash/*" | cut -f 1 -d '.')
-    # # otherwise use the location given on line 3 of the script
-    # else 
-    #     library_location="${library_location%.asm}"
-    # fi
 }
 
 function evaluate_command()
@@ -252,9 +256,6 @@ function evaluate_command()
         if [[ ${char_input[$i]} =~ ^[0-9]+$ ]]; then 
             int=${char_input[$i]}
             create_linking_command "${asm_file[$int-1]}"
-        # else 
-        #     find_library 
-        #     create_linking_command "$library_location"
         fi
 
     done
@@ -268,7 +269,6 @@ function execute_debug()
     if [ $num_obj_files == $((${#char_input[@]}-1 + $lib_count)) ]; then 
 
         # executes the linking command with the string created in "evaluate command" function
-        echo "$link_cmd$link_cmd_other"
         eval "$link_cmd$link_cmd_other"
         # determines if .out file was created
         local out_file=$(ls | grep "\b$main_file.out\b" | wc -l)
