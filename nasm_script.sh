@@ -200,14 +200,9 @@ function remove_obj_files()
         fi
     done
 
-    if [ $lib_count -gt 0 ]; then 
-        local num_obj_files=$(ls $lib_dir | grep "\b.o\b" | wc -l)
-        for ((i = 0 ; i < $num_obj_files ; i++)); do
-            local obj_file=$(ls $lib_dir | grep "\b.o\b" | grep ".o" -n | grep 1 | cut -c 3-) 
-            local obj_file=$(find $lib_dir -type f -name $obj_file -not -path "$HOME/.local/share/Trash/*")
-            rm $obj_file
-        done
-    fi
+    # removes any obj file from library dir
+    local num_obj_files=$(ls $lib_dir | grep "\b.o\b" | wc -l)
+    if [ $num_obj_files -gt 0 ]; then rm $lib_dir/*.o; fi
 }
 
 function remove_previous_out_file()
