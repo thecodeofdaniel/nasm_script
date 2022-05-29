@@ -189,8 +189,10 @@ function remove_obj_files()
     done
 
     # removes any obj file from library dir
-    local num_obj_files=$(ls $lib_dir | grep "\b.o\b" | wc -l)
-    if [ $num_obj_files -gt 0 ]; then rm $lib_dir/*.o; fi
+    if [ $lib_count -gt 0 ]; then
+        local num_obj_files=$(ls $lib_dir | grep "\b.o\b" | wc -l)
+        if [ $num_obj_files -gt 0 ]; then rm $lib_dir/*.o; fi
+    fi
 }
 
 function remove_previous_out_file()
