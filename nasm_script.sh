@@ -69,7 +69,10 @@ function check_for_main()
         local check_for_start=$(cat "${asm_file[$int-1]}.asm" | grep "_start" | wc -l)
 
         # increments counter if .asm file is a main file
-        if [ $check_for_start == 2 ]; then counter=$((counter+1)); fi
+        if [ $check_for_start == 2 ]; then 
+            counter=$((counter+1))
+            main_file=${asm_file[$int-1]}
+        fi
 
     done
 
@@ -157,15 +160,6 @@ function create_linking_command()
         nasm -f elf "$file_name.asm"
     fi
 
-    # this finds which file is MAIN and determines the name of the .out file
-    check_for_start=$(cat "$file_name.asm" | grep '_start' | wc -l)
-
-    # if main file is found then set that name to be the executable
-    if [ $check_for_start == 2 ]; then 
-        main_file=$file_name
-        link_cmd+=" '$main_file'.out"
-    fi 
-
     # this checks if the obj file was created, o_file_created is set to 1 if so
     if [ "$file_name" == "$library_location" ]; then
         o_file_created=$(ls "${library_location%/*}" | grep "\b${library_location##*/}.o\b" | wc -l)
@@ -176,8 +170,8 @@ function create_linking_command()
     # if obj files was created then increment num_obj_files
     if [ $o_file_created == 1 ]; then ((num_obj_files++)); fi
 
-    # this determines the string on the linking command
-    if [ $check_for_start == 2 ]; then 
+    # this determines the string of the linking command
+    if [ "$file_name" == "$main_file" ]; then 
         link_cmd+=" '$file_name'.o"
     else
         link_cmd_other+=" '$file_name'.o"
@@ -234,7 +228,7 @@ function evaluate_command()
     char_input=("$@")
 
     # creating a string for the link command
-    link_cmd="ld -m elf_i386 -o"
+    link_cmd="ld -m elf_i386 -o $main_file.out"
     link_cmd_other=""
     # keeping track of the number of obj files created
     num_obj_files=0
