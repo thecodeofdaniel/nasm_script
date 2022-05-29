@@ -63,17 +63,14 @@ function check_for_main()
     local counter=0
 
     for ((i = 1 ; i < ${#char_input[@]} ; i++)); do
-        # if character is an integer
-        if [[ ${char_input[$i]} =~ ^[0-9]+$ ]]; then
 
-            int=${char_input[$i]}
+        local int=${char_input[$i]}
+        # checks .asm file has "_start" text
+        local check_for_start=$(cat "${asm_file[$int-1]}.asm" | grep "_start" | wc -l)
 
-            # checks .asm file has "_start" text
-            check_for_start=$(cat "${asm_file[$int-1]}.asm" | grep "_start" | wc -l)
+        # increments counter if .asm file is a main file
+        if [ $check_for_start == 2 ]; then counter=$((counter+1)); fi
 
-            # increments counter if .asm file is a main file
-            if [ $check_for_start == 2 ]; then counter=$((counter+1)); fi      
-        fi
     done
 
     # if there's only one main file in command then continue to the next function
@@ -191,13 +188,10 @@ function remove_obj_files()
 {
     # removes the obj files selected from user after execution or debugging
     for ((i = 1 ; i < ${#char_input[@]} ; i++)); do
-        if [[ ${char_input[$i]} =~ ^[0-9]+$ ]]; then
+        local int=${char_input[$i]}
 
-            local int=${char_input[$i]}
-
-            local obj_file=$(ls | grep "\b${asm_file[$int-1]}.o\b" | wc -l)
-            if [ $obj_file == 1 ]; then rm "${asm_file[$int-1]}.o"; fi
-        fi
+        local obj_file=$(ls | grep "\b${asm_file[$int-1]}.o\b" | wc -l)
+        if [ $obj_file == 1 ]; then rm "${asm_file[$int-1]}.o"; fi
     done
 
     # removes any obj file from library dir
@@ -248,10 +242,8 @@ function evaluate_command()
     # going through each character after the first in order to create the linking command
     for ((i = 1 ; i < ${#char_input[@]} ; i++)); do
 
-        if [[ ${char_input[$i]} =~ ^[0-9]+$ ]]; then 
-            int=${char_input[$i]}
-            create_linking_command "${asm_file[$int-1]}"
-        fi
+        int=${char_input[$i]}
+        create_linking_command "${asm_file[$int-1]}"
 
     done
 
