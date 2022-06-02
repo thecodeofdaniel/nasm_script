@@ -230,7 +230,7 @@ function evaluate_command()
     char_input=("$@")
 
     # creating a string for the link command
-    link_cmd="ld -m elf_i386 -o $main_file.out"
+    link_cmd="ld -m elf_i386 -o '$main_file'.out"
     link_cmd_other=""
     # keeping track of the number of obj files created
     num_obj_files=0
