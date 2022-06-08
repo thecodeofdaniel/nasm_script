@@ -1,55 +1,15 @@
-# How to run script
+# Get the Script
 
-Once you've downloaded the script, go to your downloads directory
-
-```
-$ cd ~/Downloads
-```
-
-Run this command to list all files with their file permissions
+Clone the repository with this command
 
 ```
-$ ls -l
+$ git clone https://github.com/danieltriestocode/nasm_script.git
 ```
 
-You'll see this line
-
-![non_exe_script](https://user-images.githubusercontent.com/100104016/168086026-d7bfea17-8389-4d54-acb5-988b20a27ced.png)
-
-Run this command to change the script.sh file permissions
+Move the repo to the directory your working in
 
 ```
-$ chmod +x nasm_script.sh
-```
-
-Run this command again
-
-```
-$ ls -l
-```
-
-You'll now see this line
-
-![exe_script](https://user-images.githubusercontent.com/100104016/168086118-0ac63b7e-0f16-4b09-882b-11d4980c2259.png)
-
-This file is now executable, now move this file to the directory your working in
-
-```
-$ mv script.sh ~/PATH/TO/LIBRARY/DIR
-```
-### Example
-
-```
-$ mv script.sh ~/Desktop/CSCI_150
-```
-Tip: Use `tab` to autocomplete folder names
-
-<br />
-
-Once you've done so, run the script
-
-```
-$ ./script.sh
+$ mv nasm_script/ ~/PATH/TO/DIRECTORY
 ```
 
 <br />
@@ -61,9 +21,9 @@ When you run the script you will be prompted with
 ```
 Exit the script with: Ctrl + C
 
-1: asm_file1.asm
-2: asm_file2.asm
-3: asm_file3.asm
+1. asm_file1.asm
+2. asm_file2.asm
+3. asm_file3.asm
 
 Enter: 
 ```
