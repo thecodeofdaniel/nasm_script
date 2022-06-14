@@ -31,8 +31,8 @@ function remove_obj_files()
 function remove_out_file()
 {
     # removes all .out files from dir
-    local out_file=$(ls | grep "\b.out\b" | wc -l) 
-    if [ $out_file -gt 0 ]; then rm *.out; fi
+    local num_out_file=$(ls | grep "\b.out\b" | wc -l)
+    if [ $num_out_file -gt 0 ]; then rm *.out; fi
 }
 
 function print_asm_files()
@@ -51,8 +51,7 @@ function print_asm_files()
     # puts names of .asm files in array and outputs to screen
     for ((i = 0 ; i < $num_asm_files ; i++)); do
         asm_file[$i]=$(ls | grep "\b.asm\b" | grep .asm -n | grep "$(($i+1)):")
-        asm_file[$i]=${asm_file[$i]##*:}
-        asm_file[$i]=${asm_file[$i]%.*}
+        asm_file[$i]=${asm_file[$i]##*:}; asm_file[$i]=${asm_file[$i]%.*}
         printf "${BOLD}${BLUE}$(($i+1)).${EC} ${asm_file[$i]}.asm\n"
     done
 }
@@ -68,7 +67,7 @@ function validate_each_character()
 
     # checks rest of characters (integers)
     for ((i = 1 ; i < $sz_of_input ; i++))
-    do  
+    do
         # checks if character is an integer
         if [[ ${char_input[$i]} =~ ^[0-9]+$ ]]; then
             # if integer is not on the list
@@ -83,20 +82,20 @@ function validate_each_character()
     # if user enters only 'e' or 'd'
     if [ $sz_of_input == 1 ] && [ $errors == 0 ]; then
         # add all integers to command
-        for ((i = 0 ; i < $num_asm_files ; i++)); do 
+        for ((i = 0 ; i < $num_asm_files ; i++)); do
             char_input[$sz_of_input+$i]=$(($i+1))
         done
     fi
 
     # if there are no errors then continue
-    if [ $errors == 0 ]; then evaluate_command "${char_input[@]}"; fi 
+    if [ $errors == 0 ]; then evaluate_command "${char_input[@]}"; fi
 }
 
 function prev_cmnd()
-{   
+{
     # checks if previous command exists
     if [ ${#prev_char_input[@]} != 0 ]; then
-        # outputs the previous command 
+        # outputs the previous command
         printf "\e[1A\e[KEnter: ${BOLD}${DIM}${YELW}"; echo -n ${prev_char_input[@]}; printf "${EC}\n"
         # skips the validate_each_character integer function
         evaluate_command "${prev_char_input[@]}"
@@ -106,9 +105,9 @@ function prev_cmnd()
 }
 
 function user_input()
-{    
+{
     # grabbing user input
-    read -r -e -p $'\nEnter: \e[1m\e[33m' -a char_input; printf "${EC}"    
+    read -r -e -p $'\nEnter: \e[1m\e[33m' -a char_input; printf "${EC}"
 
     # num of characters from input
     local sz_of_input=${#char_input[@]}
@@ -117,7 +116,7 @@ function user_input()
     if   [ $sz_of_input == 0 ]; then
         prev_cmnd
     # single input commands: clear, clear history, and show history
-    elif [ $sz_of_input == 1 ]; then 
+    elif [ $sz_of_input == 1 ]; then
         if   [ "${char_input[0]}" == 'c'  ]; then clear; print_asm_files;
         elif [ "${char_input[0]}" == 'ch' ]; then history -c; printf "${RED}Cleared input history${EC}\n";
         elif [ "${char_input[0]}" == 'h'  ]; then history;
@@ -128,41 +127,29 @@ function user_input()
 }
 
 function create_linking_command()
-{   
+{
     # passing in name of file from parameter
     local file_name=$1
-    
+
     # creating obj file
     if [ "${char_input[0]}" = 'e' ]; then
         nasm -f elf "$file_name.asm"
-    else 
+    else
         nasm -f elf -g "$file_name.asm"
-    fi
-
-    # must NOT be a library file
-    if [ "$file_name" != "${library_location}" ]; then
-        # checks if file is main
-        local check_for_start=$(cat "$file_name.asm" | grep "_start" | wc -l)
-
-        if [ $check_for_start == 2 ]; then 
-            main_counter=$((main_counter+1))
-            link_cmd+=" '$file_name'.out"
-            main_file=$file_name
-        fi
     fi
 
     # checks if obj file was created
     if [ "$file_name" == "$library_location" ]; then
         o_file_created=$(ls "${library_location%/*}" | grep "\b${library_location##*/}.o\b" | wc -l)
-    else 
+    else
         o_file_created=$(ls | grep "\b$file_name.o\b" | wc -l)
     fi
 
     # if obj file was created then increment
     if [ $o_file_created == 1 ]; then ((num_obj_files++)); fi
 
-    # sets up linking command string 
-    if [ "$file_name" == "$main_file" ]; then 
+    # sets up linking command string
+    if [ "$file_name" == "$main_file" ]; then
         link_cmd+=" '$file_name'.o"
     else
         link_cmd_other+=" '$file_name'.o"
@@ -174,9 +161,9 @@ function look_for_libraries()
     # num of libraries declared in main
     lib_count=$(cat "$main_file.asm" | grep -w "lib:" | wc -l)
 
-    if [ $lib_count -gt 0 ]; then 
+    if [ $lib_count -gt 0 ]; then
         for ((i = 1 ; i <= $lib_count ; i++))
-        do 
+        do
             # grabs name of the library file
             lib_name=$(cat "$main_file.asm" | grep -w "lib:" | grep "lib:" -n | grep $i | awk '{print $3}')
             # grabs path to the library file
@@ -184,11 +171,11 @@ function look_for_libraries()
             # if file is not found then throw error message
             if [ "$library_location" == "" ]; then
                 printf "${RED}'$lib_name' was not found ${EC}\n"
-            else 
+            else
                 create_linking_command "$library_location"
             fi
         done
-    fi 
+    fi
 }
 
 function evaluate_command()
@@ -207,10 +194,19 @@ function evaluate_command()
     for ((i = 1 ; i < ${#char_input[@]} ; i++))
     do
         int=${char_input[$i]}
-        create_linking_command "${asm_file[$int-1]}"
+
+        # check file for main
+        local check_for_start=$(cat "${asm_file[$int-1]}.asm" | grep "_start" | wc -l)
+        if [ $check_for_start == 2 ]; then
+            main_counter=$((main_counter+1))
+            main_file=${asm_file[$int-1]}
+            link_cmd+=" '$main_file'.out"
+        fi
 
         # if there's more than one main file in command then break
-        if [ $main_counter -gt 1 ]; then break; fi 
+        if [ $main_counter -gt 1 ]; then break; fi
+
+        create_linking_command "${asm_file[$int-1]}"
     done
 
     # command must include only one main file to continue
@@ -236,11 +232,11 @@ function execute_debug()
 
         # executes the linking command
         eval "$link_cmd$link_cmd_other"
-        
+
         # checks if out file was created
         local out_file=$(ls | grep "\b$main_file.out\b" | wc -l)
 
-        if [ $out_file == 1 ]; then 
+        if [ $out_file == 1 ]; then
             # if user chose 'e' then execute the main file, otherwise debug
             if [ ${char_input[0]} == 'e' ]; then
                 eval "./'$main_file'.out"; printf "Exited ${GRN}$main_file.out${EC}\n"
@@ -251,8 +247,8 @@ function execute_debug()
     fi
 }
 
-function exit_script() 
-{    
+function exit_script()
+{
     # user decides whether or not they want to keep the obj and/or out files
     if [ $keep_obj_files = false ]; then remove_obj_files; fi
     if [ $keep_out_files = false ]; then remove_out_file; fi
@@ -267,7 +263,7 @@ function exit_script()
 trap exit_script SIGINT
 
 # read user's input history
-if [ $create_input_history = true ]; then HISTCONTROL=erasedups; history -r; fi 
+if [ $create_input_history = true ]; then HISTCONTROL=erasedups; history -r; fi
 
 # Allows script to loop until user exits
 function main()
