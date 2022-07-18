@@ -186,6 +186,7 @@ function evaluate_command()
     # link command string
     link_cmd="ld -m elf_i386 -o"
     link_cmd_other=""
+
     # counter for obj & main files
     num_obj_files=0
     main_counter=0
@@ -203,17 +204,12 @@ function evaluate_command()
             link_cmd+=" '$main_file'.out"
         fi
 
-        # if there's more than one main file in command then break
-        if [ $main_counter -gt 1 ]; then break; fi
-
         create_linking_command "${asm_file[$int-1]}"
     done
 
     # command must include only one main file to continue
-    if   [ $main_counter  == 0 ]; then
-        printf "${RED}Include one main file${END}\n"; remove_obj_files
-    elif [ $main_counter -gt 1 ]; then
-        printf "${RED}Select only one main file${END}\n"; remove_obj_files
+    if [ $main_counter  == 0 ] || [ $main_counter -gt 1 ]; then
+        printf "${RED}Include (only) one main file${END}\n"; remove_obj_files
     else
         # saving command in hist var and in array
         history -s "${char_input[@]}"; HISTCONTROL=ignoredups:erasedups
@@ -245,18 +241,16 @@ function execute_debug()
             fi
         fi
     fi
+
+    # user decides whether or not they want to keep the obj and/or out files
+    if [ $keep_obj_files = false ]; then remove_obj_files; fi
+    if [ $keep_out_files = false ]; then remove_out_file; fi
 }
 
 function exit_script()
 {
-    # user decides whether or not they want to keep the obj and/or out files
-    if [ $keep_obj_files = false ]; then remove_obj_files; fi
-    if [ $keep_out_files = false ]; then remove_out_file; fi
-
     # write command into history
-    if [ $create_input_history = true ]; then history -w; fi
-
-    exit 0
+    if [ $create_input_history = true ]; then history -w; fi; exit 0
 }
 
 # "trap" catches signals and "Ctrl + C" signals "SIGINT"
