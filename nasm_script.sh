@@ -8,14 +8,14 @@ create_input_history=false
 keep_obj_files=false
 keep_out_files=false
 
-# colors/text_format when outputting text
-EC="\e[0m"
-BOLD="\e[1m"
+# colors/text format when outputting text
+END="\e[0m"
+BLD="\e[1m"
 DIM="\e[2m"
 RED="\e[31m"
 GRN="\e[32m"
-YELW="\e[33m"
-BLUE="\e[34m"
+YLW="\e[33m"
+BLU="\e[34m"
 
 function remove_obj_files()
 {
@@ -42,17 +42,17 @@ function print_asm_files()
 
     # If there are NO .asm files in current dir
     if [ $num_asm_files == 0 ]; then
-        printf "${BOLD}${RED}No .asm files here!${EC}\n"; exit 0
+        printf "${BLD}${RED}No .asm files here!${END}\n"; exit 0
     fi
 
     # displays how to exit script
-    printf "${DIM}Exit the script with: ${BOLD}${YELW}Ctrl + C${EC}\n\n"
+    printf "${DIM}Exit the script with: ${BLD}${YLW}Ctrl + C${END}\n\n"
 
     # puts names of .asm files in array and outputs to screen
     for ((i = 0 ; i < $num_asm_files ; i++)); do
         asm_file[$i]=$(ls | grep "\b.asm\b" | grep .asm -n | grep "$(($i+1)):")
         asm_file[$i]=${asm_file[$i]##*:}; asm_file[$i]=${asm_file[$i]%.*}
-        printf "${BOLD}${BLUE}$(($i+1)).${EC} ${asm_file[$i]}.asm\n"
+        printf "${BLD}${BLU}$(($i+1)).${END} ${asm_file[$i]}.asm\n"
     done
 }
 
@@ -62,7 +62,7 @@ function validate_each_character()
 
     # checks first character
     if [ "${char_input[0]}" != 'e' ] && [ "${char_input[0]}" != 'd' ]; then
-        printf "${RED}'e' or 'd' should be the first character${EC}\n"; ((errors++))
+        printf "${RED}'e' or 'd' should be the first character${END}\n"; ((errors++))
     fi
 
     # checks rest of characters (integers)
@@ -72,10 +72,10 @@ function validate_each_character()
         if [[ ${char_input[$i]} =~ ^[0-9]+$ ]]; then
             # if integer is not on the list
             if [ ${char_input[$i]} == 0 ] || [ ${char_input[$i]} -gt $num_asm_files ]; then
-                printf "${RED}'${char_input[$i]}' is not on the list${EC}\n"; ((errors++))
+                printf "${RED}'${char_input[$i]}' is not on the list${END}\n"; ((errors++))
             fi
         else
-            printf "${RED}'${char_input[$i]}' is not a valid option at position $(($i+1))${EC}\n"; ((errors++))
+            printf "${RED}'${char_input[$i]}' is not a valid option at position $(($i+1))${END}\n"; ((errors++))
         fi
     done
 
@@ -96,18 +96,18 @@ function prev_cmnd()
     # checks if previous command exists
     if [ ${#prev_char_input[@]} != 0 ]; then
         # outputs the previous command
-        printf "\e[1A\e[KEnter: ${BOLD}${DIM}${YELW}"; echo -n ${prev_char_input[@]}; printf "${EC}\n"
+        printf "\e[1A\e[KEnter: ${BLD}${DIM}${YLW}"; echo -n ${prev_char_input[@]}; printf "${END}\n"
         # skips the validate_each_character integer function
         evaluate_command "${prev_char_input[@]}"
     else
-        printf "${RED}No previous command${EC}\n"
+        printf "${RED}No previous command${END}\n"
     fi
 }
 
 function user_input()
 {
     # grabbing user input
-    read -r -e -p $'\nEnter: \e[1m\e[33m' -a char_input; printf "${EC}"
+    read -r -e -p $'\nEnter: \e[1m\e[33m' -a char_input; printf "${END}"
 
     # num of characters from input
     local sz_of_input=${#char_input[@]}
@@ -118,7 +118,7 @@ function user_input()
     # single input commands: clear, clear history, and show history
     elif [ $sz_of_input == 1 ]; then
         if   [ "${char_input[0]}" == 'c'  ]; then clear; print_asm_files;
-        elif [ "${char_input[0]}" == 'ch' ]; then history -c; printf "${RED}Cleared input history${EC}\n";
+        elif [ "${char_input[0]}" == 'ch' ]; then history -c; printf "${RED}Cleared input history${END}\n";
         elif [ "${char_input[0]}" == 'h'  ]; then history;
         else validate_each_character; fi
     else
@@ -170,7 +170,7 @@ function look_for_libraries()
             library_location=$(find $lib_dir -type f -name $lib_name -not -path "$HOME/.local/share/Trash/*" | cut -f 1 -d '.')
             # if file is not found then throw error message
             if [ "$library_location" == "" ]; then
-                printf "${RED}'$lib_name' was not found ${EC}\n"
+                printf "${RED}'$lib_name' was not found ${END}\n"
             else
                 create_linking_command "$library_location"
             fi
@@ -211,9 +211,9 @@ function evaluate_command()
 
     # command must include only one main file to continue
     if   [ $main_counter  == 0 ]; then
-        printf "${RED}Include one main file${EC}\n"; remove_obj_files
+        printf "${RED}Include one main file${END}\n"; remove_obj_files
     elif [ $main_counter -gt 1 ]; then
-        printf "${RED}Select only one main file${EC}\n"; remove_obj_files
+        printf "${RED}Select only one main file${END}\n"; remove_obj_files
     else
         # saving command in hist var and in array
         history -s "${char_input[@]}"; HISTCONTROL=ignoredups:erasedups
@@ -239,7 +239,7 @@ function execute_debug()
         if [ $out_file == 1 ]; then
             # if user chose 'e' then execute the main file, otherwise debug
             if [ ${char_input[0]} == 'e' ]; then
-                eval "./'$main_file'.out"; printf "Exited ${GRN}$main_file.out${EC}\n"
+                eval "./'$main_file'.out"; printf "Exited ${GRN}$main_file.out${END}\n"
             else
                 eval "gdb --quiet '$main_file'.out"
             fi
