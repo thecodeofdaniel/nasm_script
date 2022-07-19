@@ -1,22 +1,16 @@
 # Get the Script
 
-Clone the repository with this command
+Clone the repository into your working directory with this command
 
 ```
-$ git clone https://github.com/danieltriestocode/nasm_script.git
-```
-
-Move the repo to the directory your working in
-
-```
-$ mv nasm_script/ ~/PATH/TO/DIRECTORY
+$ git clone https://github.com/danieltriestocode/nasm_script.git < ~/PATH/TO/DIRECTORY >
 ```
 
 <br />
 
 # Guide
 
-When you run the script you will be prompted with
+When you run the script you will be prompted with something like this
 
 ```
 Exit the script with: Ctrl + C
@@ -42,21 +36,13 @@ Enter: d 1 2
 
 ## Explanation
 
-`
-e = execute
-`
+`e` = execute 
 
-`
-d = debug
-`
+`d` = debug
 
-`
-1 = the first file listed in prompt
-`
+`1` = the first file listed in prompt
 
-`
-2 = the second file listed in prompt
-`
+`2` = the second file listed in prompt
 
 <br />
 
@@ -76,7 +62,7 @@ Entering a command with no selected files from the list will assume that you wan
 Enter: e
 ```
 
-is the same as if we use the example above
+is the same as (if we use the example above)
 
 ```
 Enter: e 1 2 3
@@ -94,7 +80,7 @@ You can include multiple library files by declaring them in your MAIN file
 ; lib: name_of_library.asm
 ```
 
-Make sure to use ` lib: ` follwed by a space with the name of your library file
+Make sure to use `lib:` followed by a space with the name of your library file
 
 
 You can include multiple files as well, just use the `lib:` keyword for each of them 
@@ -121,37 +107,20 @@ Before you start including library files, include the directory your library fil
 
 # Other Commands 
 
-These commands are not required to run your program but they are convenient 
+`c` = clear screen
 
-`
-<empty> = execute/debug the last acceptable command of that session
-`
+`↑↓` = go through input history
 
-:arrow_up_down: keys
-`
-= go through user input history
-`
+`<empty>` = execute/debug the last acceptable command of that session
 
-`
-h = display user input history
-`
+`h` = display input history
 
-`
-c = clear screen
-`
-
-`
-ch = clear user input history
-`
+`ch` = clear input history
 
 <br />
 
 # Video Examples: 
 
-https://user-images.githubusercontent.com/100104016/168119627-6143bba3-99f0-44da-a8b0-796f1aaf9726.mp4
+https://user-images.githubusercontent.com/100104016/179667430-df1aba73-e104-45bd-bc34-298978a0c0c9.mp4
 
-
-https://user-images.githubusercontent.com/100104016/168119679-3532adcb-e064-4fcb-8123-386a6ea7d6d8.mp4
-
-
-https://user-images.githubusercontent.com/100104016/168119711-e74d171f-24da-4bbf-9c98-3e4a03a2198f.mp4
+https://user-images.githubusercontent.com/100104016/179667674-94270b35-193f-472b-a1a9-9fdc35408466.mp4
