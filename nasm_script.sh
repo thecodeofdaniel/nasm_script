@@ -24,8 +24,10 @@ function remove_obj_files()
     if [ $num_obj_files -gt 0 ]; then rm *.o; fi
 
     # remove all obj files from library dir
-    local num_obj_files=$(ls $lib_dir | grep "\b.o\b" | wc -l)
-    if [ $num_obj_files -gt 0 ]; then rm $lib_dir/*.o; fi
+    if [ $lib_count -gt 0 ]; then
+        local num_obj_files=$(ls $lib_dir | grep "\b.o\b" | wc -l)
+        if [ $num_obj_files -gt 0 ]; then rm $lib_dir/*.o; fi
+    fi
 }
 
 function remove_out_file()
