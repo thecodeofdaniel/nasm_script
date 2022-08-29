@@ -3,17 +3,17 @@
 Clone the repository into your working directory with this command
 
 ```
-$ git clone https://github.com/danieltriestocode/nasm_script.git < ~/PATH/TO/DIRECTORY >
+$ git clone https://github.com/danieltriestocode/nasm_script.git <~/PATH/TO/DIRECTORY>
 ```
 
 <br />
 
 # Guide
 
-When you run the script you will be prompted with something like this
+When you run the script you will be prompted with...
 
 ```
-Exit the script with: Ctrl + C
+Exit script with: <Ctrl> + C
 
 1. asm_file1.asm
 2. asm_file2.asm
@@ -22,7 +22,7 @@ Exit the script with: Ctrl + C
 Enter: 
 ```
 
-You only have to enter one command for this script
+You can enter something like this
 
 ```
 Enter: e 1 2
@@ -74,16 +74,7 @@ The same goes for debugging: `d`
 
 # Including Library Files
 
-You can include multiple library files by declaring them in your MAIN file
-
-```
-; lib: name_of_library.asm
-```
-
-Make sure to use `lib:` followed by a space with the name of your library file
-
-
-You can include multiple files as well, just use the `lib:` keyword for each of them 
+You can include multiple library files by declaring them in your **MAIN** file
 
 ```
 ; lib: library1.asm
@@ -91,16 +82,20 @@ You can include multiple files as well, just use the `lib:` keyword for each of 
 ; lib: library3.asm
 ```
 
-Before you start including library files, include the directory your library files are in on line `3`
+Make sure to use `lib:` keyword followed by a `<space>` and the name of your library file
+
+
+## Include Library Directory
+Before you start including library files, include the directory your library files exist in on line `3`
 
 ```
-3   lib_dir="$HOME/PATH/TO/LIBRARY/FOLDER"
+3   # LIB_DIR="$HOME/PATH/TO/LIBRARY/DIR"
 ```
 
 ### Example
 
 ```
-3   lib_dir="$HOME/Desktop/CSCI_150/library_dir"
+3   LIB_DIR="$HOME/Desktop/CSCI150/library_dir"
 ```
 
 <br />
@@ -112,10 +107,6 @@ Before you start including library files, include the directory your library fil
 `↑↓` = go through input history
 
 `<empty>` = execute/debug the last acceptable command of that session
-
-`h` = display input history
-
-`ch` = clear input history
 
 <br />
 
