@@ -1,12 +1,18 @@
 #!/bin/bash
 
-# LIB_DIR="$HOME/PATH/TO/LIBRARY/DIR"
+# Grabs the $PWD of where the script is being run
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-# set to true if you want to keep .o/.out files
+
+# Grabs the library directory from "lib_dir.txt"
+LIB_DIR=$(head -n 1 $SCRIPT_DIR/lib_dir.txt | grep -oE '^\S+')
+
+# Set to true if you want to keep .o/.out files
 keep_obj_files=false
 keep_out_files=false
 
-# colors/text format
+
+# Colors/text format
 END="\e[0m"
 BLD="\e[1m"
 DIM="\e[2m"
@@ -14,6 +20,9 @@ RED="\e[31m"
 GRN="\e[32m"
 YLW="\e[33m"
 BLU="\e[34m"
+
+# Command to build object files
+BUILD_CMND="nasm -f elf"
 
 function _remove_obj_files()
 {
@@ -125,9 +134,9 @@ function _compile_link()
 
     # create object file
     if [ "${cmnd[0]}" == 'e' ]; then
-        nasm -f elf "$file.asm"
+        $BUILD_CMND "$file.asm"
     else
-        nasm -f elf -g "$file.asm"
+        $BUILD_CMND -g "$file.asm"
     fi
 
     # check if object file was created
@@ -250,4 +259,4 @@ function _main()
     _main
 }
 
-clear; _list; _main
+_list; _main
