@@ -26,15 +26,15 @@ BUILD_CMND="nasm -f elf"
 
 function _remove_obj_files()
 {
-    local num_obj_files=$(ls | grep "\b.o\b" | wc -l)
-    if [ $num_obj_files -gt 0 ]; then rm *.o; fi
+    if find . -type f -name "*.o" | grep -q .; then
+        rm *.o
+    fi
 }
 
 function _remove_lib_obj_files()
 {
-    if [ $lib_count -gt 0 ]; then
-        local num_obj_files=$(ls $LIB_DIR | grep "\b.o\b" | wc -l)
-        if [ $num_obj_files -gt 0 ]; then rm $LIB_DIR/*.o; fi
+    if find $LIB_DIR -type f -name "*.o" | grep -q .; then
+        rm $LIB_DIR/*.o
     fi
 }
 
