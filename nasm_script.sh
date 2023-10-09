@@ -24,6 +24,9 @@ BLU="\e[34m"
 # Command to build object files
 BUILD_CMND="nasm -f elf"
 
+# Command to link object files and produce executable
+LINK_CMND="ld -m elf_i386 -o"
+
 function _remove_obj_files()
 {
     if find . -type f -name "*.o" | grep -q .; then
@@ -159,7 +162,7 @@ function _compile_link()
 function _search_libraries()
 {
     # Grab number of libraries declared in main
-    lib_count=$(cat "$main_file.asm" | grep -w "lib:" | wc -l)
+    lib_count=$(grep -w "lib:" "$main_file.asm" | wc -l)
 
     # If greater then 0 then continue
     if [ $lib_count -gt 0 ]; then
@@ -167,7 +170,7 @@ function _search_libraries()
         for ((i = 1 ; i <= $lib_count ; i++))
         do
             # Grab name of library file declared in main file
-            local lib_file=$(cat "$main_file.asm" | grep -w "lib:" | grep "lib:" -n | grep $i | awk '{print $3}')
+            local lib_file=$(grep -w "lib:" "$main_file.asm" | grep "lib:" -n | grep $i | awk '{print $3}')
             # Remove the file extension (.asm)
             lib_file="${lib_file%.*}"
 
@@ -183,49 +186,52 @@ function _search_libraries()
 
 function _evaluate()
 {
-    # pass in the cmnd (array)
+    # Pass the input from user
     cmnd=("$@")
 
-    # counter for main and object files
+    # Add counter for main file and object files
     local main_counter=0
     num_obj_files=0
 
-    # string for linking command
-    link_cmnd_1="ld -m elf_i386 -o"
+    # These variables setup the linking command
+    link_cmnd_1="$LINK_CMND"
     link_cmnd_2=""
 
-    # go through each file
+    # Go through each file from input
     for ((i = 1 ; i < ${#cmnd[@]} ; i++))
     do
-        local int=${cmnd[$i]}
+        # Grab the number associated with file from list
+        local file_num=${cmnd[$i]}
 
-        # check file for main
-        local check_for_start=$(cat "${asm_file[$int-1]}.asm" | grep "_start" | wc -l)
-        if [ $check_for_start == 2 ]; then
+        # Check if file is main
+        local is_main=$(grep "_start" "${asm_file[$file_num-1]}.asm" | wc -l)
+        if [ $is_main == 2 ]; then
             ((main_counter++))
 
-            if [ $main_counter -gt 1 ]; then break; fi
-
-            # set that file as main
-            main_file=${asm_file[$int-1]}
-            link_cmnd_1+=" '$main_file'.out"
+            # If input has more than one main file then exit function
+            if [ $main_counter -gt 1 ]; then
+                printf "${RED}Include (only) one main file${END}\n";
+                _remove_obj_files
+                return
+            # Otherwise declare the name of the main file and add to linking command
+            else
+                main_file=${asm_file[$file_num-1]}
+                link_cmnd_1+=" '$main_file'.out"
+            fi
         fi
 
-        # compile file
-        _compile_link "${asm_file[$int-1]}"
+        # Run file through function
+        _compile_link "${asm_file[$file_num-1]}"
     done
 
-    # command should only include one main file
-    if [ $main_counter != 1 ]; then
-        printf "${RED}Include (only) one main file${END}\n"; _remove_obj_files
-    else
-        # save command into history
-        history -s "${cmnd[@]}"; HISTCONTROL=ignoredups:erasedups
-        prev_input=("${cmnd[@]}")
+    # Save the command in history
+    history -s "${cmnd[@]}"; HISTCONTROL=ignoredups:erasedups
+    prev_input=("${cmnd[@]}")
 
-        _search_libraries
-        _execute_debug
-    fi
+    # Search for library files declared in main
+    _search_libraries
+    # Create executable
+    _execute_debug
 }
 
 function _execute_debug()
