@@ -133,27 +133,22 @@ function _input()
 
 function _compile_link()
 {
-    # pass in name of file from argument
+    # Grab the argument passed in (file to be compiled)
     local file=$1
 
-    # create object file
+    # Compile the file (set -g flag for debugging)
     if [ "${cmnd[0]}" == 'e' ]; then
         $BUILD_CMND "$file.asm"
     else
         $BUILD_CMND -g "$file.asm"
     fi
 
-    # check if object file was created
-    if [ "$file" == "$lib_path" ]; then
-        local obj_file=$(ls "${lib_path%/*}" | grep "\b${lib_path##*/}.o\b" | wc -l)
-    else
-        local obj_file=$(ls | grep "\b$file.o\b" | wc -l)
+    # If object file was created then increment counter
+    if [ -e "$file.asm" ]; then
+        ((num_obj_files++));
     fi
 
-    # increment if object file was created
-    if [ $obj_file == 1 ]; then ((num_obj_files++)); fi
-
-    # add file to linking command
+    # Add file to linking command
     if [ "$file" == "$main_file" ]; then
         link_cmnd_1+=" '$file'.o"
     else
@@ -163,20 +158,24 @@ function _compile_link()
 
 function _search_libraries()
 {
-    # get number of libraries declared in main
+    # Grab number of libraries declared in main
     lib_count=$(cat "$main_file.asm" | grep -w "lib:" | wc -l)
 
+    # If greater then 0 then continue
     if [ $lib_count -gt 0 ]; then
+        # Grab the names of the library files and compile them if they exist
         for ((i = 1 ; i <= $lib_count ; i++))
         do
-            # grab name of file and see if it exists
-            local lib=$(cat "$main_file.asm" | grep -w "lib:" | grep "lib:" -n | grep $i | awk '{print $3}')
-            lib_path=$(find $LIB_DIR -type f -name $lib | cut -f 1 -d '.')
-            # if file is not found
-            if [ "$lib_path" == "" ]; then
-                printf "${RED}\"$lib\" was not found ${END}\n"
+            # Grab name of library file declared in main file
+            local lib_file=$(cat "$main_file.asm" | grep -w "lib:" | grep "lib:" -n | grep $i | awk '{print $3}')
+            # Remove the file extension (.asm)
+            lib_file="${lib_file%.*}"
+
+            # Check if that file exists
+            if find "$LIB_DIR" -type f -name "$lib_file.asm" | grep -q .; then
+                _compile_link "$LIB_DIR$lib_file"
             else
-                _compile_link "$lib_path"
+                printf "${RED}\"$lib_file\" was not found ${END}\n"
             fi
         done
     fi
