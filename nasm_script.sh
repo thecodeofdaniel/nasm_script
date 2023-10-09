@@ -40,8 +40,9 @@ function _remove_lib_obj_files()
 
 function _remove_out_file()
 {
-    local num_out_file=$(ls | grep "\b.out\b" | wc -l)
-    if [ $num_out_file -gt 0 ]; then rm *.out; fi
+    if find . -type f -name "*.out" | grep -q .; then
+        rm *.out
+    fi
 }
 
 function _list()
