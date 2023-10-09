@@ -1,0 +1,5 @@
+# Ignore the path to where library files are located
+lib_dir.txt
+
+# Ignore bash files containing test
+*test*.sh
