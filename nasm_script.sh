@@ -237,18 +237,16 @@ function _evaluate()
 
 function _execute_debug()
 {
-    # compare number of object files created and number of files declared
+    # If there's a correct number of object files then we're ready to create executable
     if [ $num_obj_files == $((${#cmnd[@]}-1 + $lib_count)) ]; then
 
-        # execute the linking command
+        # Execute the linking command
         eval "$link_cmnd_1$link_cmnd_2"
 
-        # check if .out file was created
-        local out_file=$(ls | grep "\b$main_file.out\b" | wc -l)
-
-        if [ $out_file == 1 ]; then
+        # Check if the executable was created
+        if [ -e "$main_file.out" ]; then
             if [ ${cmnd[0]} == 'e' ]; then
-                eval "./'$main_file'.out";
+                eval "./'$main_file'.out"
                 printf "Exited ${GRN}$main_file.out${END}\n"
             else
                 eval "gdb --quiet '$main_file'.out"
@@ -256,7 +254,7 @@ function _execute_debug()
         fi
     fi
 
-    # remove all .o/.out files if user chooses so
+    # Remove all .o/.out files if user chooses so
     if [ $keep_obj_files = false ]; then _remove_obj_files; _remove_lib_obj_files; fi
     if [ $keep_out_files = false ]; then _remove_out_file; fi
 }
