@@ -63,7 +63,7 @@ function _list()
         # Add file names to array and output them
         for ((i = 0 ; i < $num_asm_files ; i++)); do
             asm_file[$i]=$(ls | grep "\b.asm\b" | grep .asm -n | grep "$(($i+1)):")
-            asm_file[$i]=${asm_file[$i]##*:};
+            asm_file[$i]=${asm_file[$i]##*:}
             asm_file[$i]=${asm_file[$i]%.*}
             printf "${BLD}${BLU}$(($i+1)).${END} ${asm_file[$i]}.asm\n"
         done
@@ -129,7 +129,7 @@ function _input()
         _prev_input
     # If user enters 'c' then clear terminal
     elif [ ${#cmnd[@]} == 1 ] && [ "${cmnd[0]}" == 'c' ]; then
-        clear; _list;
+        clear; _list
     else
         _validate
     fi
@@ -149,7 +149,7 @@ function _compile_link()
 
     # If object file was created then increment counter
     if [ -e "$file.asm" ]; then
-        ((num_obj_files++));
+        ((num_obj_files++))
     fi
 
     # Add file to linking command
@@ -211,7 +211,7 @@ function _evaluate()
 
             # If input has more than one main file then exit function
             if [ $main_counter -gt 1 ]; then
-                printf "${RED}Include (only) one main file${END}\n";
+                printf "${RED}Include (only) one main file${END}\n"
                 _remove_obj_files
                 return
             # Otherwise declare the name of the main file and add to linking command
