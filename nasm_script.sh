@@ -69,35 +69,38 @@ function _list()
 
 function _validate()
 {
-    local errors=0
-
-    # check first character
+    # Verify that first character is 'e' or 'd' otherwise exit the function
     if [ "${cmnd[0]}" != 'e' ] && [ "${cmnd[0]}" != 'd' ]; then
-        printf "${RED}'e' or 'd' should be the first character${END}\n"; ((errors++))
+        printf "${RED}'e' or 'd' should be the first character${END}\n"
+        return
     fi
 
-    # check rest of characters
-    for ((i = 1 ; i < ${#cmnd[@]} ; i++))
-    do
-        if [[ ${cmnd[$i]} =~ ^[0-9]+$ ]]; then
-            # if integer is not on the list
-            if [ ${cmnd[$i]} == 0 ] || [ ${cmnd[$i]} -gt $num_asm_files ]; then
-                printf "${RED}'${cmnd[$i]}' is not on the list${END}\n"; ((errors++))
-            fi
-        else
-            # if character is not an integer
-            printf "${RED}'${cmnd[$i]}' is not a valid option at position $(($i+1))${END}\n"; ((errors++))
-        fi
-    done
-
-    # add all files listed into command if 'e' or 'd' is only entered
-    if [ ${#cmnd[@]} == 1 ] && [ $errors == 0 ]; then
+    # If only 1 letter is entered include all files in curr dir to user's input
+    if [ ${#cmnd[@]} == 1 ]; then
         for ((i = 0 ; i < $num_asm_files ; i++)); do
             cmnd[(${#cmnd[@]}+$i)]=$(($i+1))
         done
+    # Otherwise evaluate the rest of input
+    else
+        for ((i = 1 ; i < ${#cmnd[@]} ; i++))
+        do
+            # If character is an integer
+            if [[ ${cmnd[$i]} =~ ^[0-9]+$ ]]; then
+                # If integer is not on the list
+                if [ ${cmnd[$i]} == 0 ] || [ ${cmnd[$i]} -gt $num_asm_files ]; then
+                    printf "${RED}'${cmnd[$i]}' is not on the list${END}\n"
+                    return
+                fi
+            else
+                # If character is not an integer
+                printf "${RED}'${cmnd[$i]}' is not a valid option at position $(($i+1))${END}\n"
+                return
+            fi
+        done
     fi
 
-    if [ $errors == 0 ]; then _evaluate "${cmnd[@]}"; fi
+    # If input is acceptable then move to next function
+    _evaluate "${cmnd[@]}"
 }
 
 function _prev_cmnd()
