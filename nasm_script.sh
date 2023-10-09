@@ -108,11 +108,12 @@ function _validate()
 
 function _prev_input()
 {
-    # check if previous command exists
+    # Check if previous command exists
     if [ ${#prev_input[@]} != 0 ]; then
-        # output the previous command
+        # Output the previous command and skip validation
         printf "\e[1A\e[KEnter: ${BLD}${DIM}${YLW}"; echo -n ${prev_input[@]}; printf "${END}\n"
         _evaluate "${prev_input[@]}"
+    # Otherwise tell user that no previous command exists
     else
         printf "${RED}No previous command${END}\n"
     fi
