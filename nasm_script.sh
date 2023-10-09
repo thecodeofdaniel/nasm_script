@@ -47,24 +47,24 @@ function _remove_out_file()
 
 function _list()
 {
-    # get number of .asm files in current dir
+    # Grab number of .asm files
     num_asm_files=$(ls | grep "\b.asm\b" | wc -l)
 
-    # exit if no .asm files are present
+    # Exit if no .asm files exist
     if [ $num_asm_files == 0 ]; then
-        printf "${BLD}${RED}No .asm files here!${END}\n"; exit 0
+        printf "${BLD}${RED}No .asm files here!${END}\n"
+    else
+        # Display how to exit script
+        printf "${DIM}Exit script with: ${BLD}${YLW}<Ctrl> + C${END}\n\n"
+
+        # Add file names to array and output them
+        for ((i = 0 ; i < $num_asm_files ; i++)); do
+            asm_file[$i]=$(ls | grep "\b.asm\b" | grep .asm -n | grep "$(($i+1)):")
+            asm_file[$i]=${asm_file[$i]##*:};
+            asm_file[$i]=${asm_file[$i]%.*}
+            printf "${BLD}${BLU}$(($i+1)).${END} ${asm_file[$i]}.asm\n"
+        done
     fi
-
-    # display how to exit script
-    printf "${DIM}Exit script with: ${BLD}${YLW}<Ctrl> + C${END}\n\n"
-
-    # output file names and add names to array
-    for ((i = 0 ; i < $num_asm_files ; i++)); do
-        asm_file[$i]=$(ls | grep "\b.asm\b" | grep .asm -n | grep "$(($i+1)):")
-        asm_file[$i]=${asm_file[$i]##*:};
-        asm_file[$i]=${asm_file[$i]%.*}
-        printf "${BLD}${BLU}$(($i+1)).${END} ${asm_file[$i]}.asm\n"
-    done
 }
 
 function _validate()
