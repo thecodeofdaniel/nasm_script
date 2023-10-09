@@ -103,27 +103,27 @@ function _validate()
     _evaluate "${cmnd[@]}"
 }
 
-function _prev_cmnd()
+function _prev_input()
 {
     # check if previous command exists
-    if [ ${#prev_cmnd[@]} != 0 ]; then
+    if [ ${#prev_input[@]} != 0 ]; then
         # output the previous command
-        printf "\e[1A\e[KEnter: ${BLD}${DIM}${YLW}"; echo -n ${prev_cmnd[@]}; printf "${END}\n"
-        _evaluate "${prev_cmnd[@]}"
+        printf "\e[1A\e[KEnter: ${BLD}${DIM}${YLW}"; echo -n ${prev_input[@]}; printf "${END}\n"
+        _evaluate "${prev_input[@]}"
     else
         printf "${RED}No previous command${END}\n"
     fi
 }
 
-function _input_cmnd()
+function _input()
 {
-    # grab user input
+    # Grab user input
     read -r -e -p $'\nEnter: \e[1m\e[33m' -a cmnd; printf "${END}"
 
-    # use previous command
+    # If user input is emtpy then run previous input
     if   [ ${#cmnd[@]} == 0 ]; then
-        _prev_cmnd
-    # use clear command
+        _prev_input
+    # If user enters 'c' then clear terminal
     elif [ ${#cmnd[@]} == 1 ] && [ "${cmnd[0]}" == 'c' ]; then
         clear; _list;
     else
@@ -222,7 +222,7 @@ function _evaluate()
     else
         # save command into history
         history -s "${cmnd[@]}"; HISTCONTROL=ignoredups:erasedups
-        prev_cmnd=("${cmnd[@]}")
+        prev_input=("${cmnd[@]}")
 
         _search_libraries
         _execute_debug
@@ -259,7 +259,7 @@ trap exit 0 SIGINT
 
 function _main()
 {
-    _input_cmnd
+    _input
     _main
 }
 
