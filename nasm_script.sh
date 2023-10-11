@@ -149,13 +149,16 @@ function _compile_link()
     # If object file was created then increment counter
     if [ -e "$file.o" ]; then
         ((num_obj_files++))
-    fi
 
-    # Add file to linking command
-    if [ "$file" == "$main_file" ]; then
-        link_cmnd_1+=" '$file'.o"
+        # Check if the file is main
+        if [ "$file" == "$main_file" ]; then
+            link_cmnd_1+=" '$file'.o"
+        else
+            link_cmnd_2+=" '$file'.o"
+        fi
+    # Otherwise exit function and return error code
     else
-        link_cmnd_2+=" '$file'.o"
+        return 1
     fi
 }
 
@@ -222,6 +225,9 @@ function _evaluate()
 
         # Run file through function
         _compile_link "${asm_file[$file_num-1]}"
+
+        # If there was an error from the function above, exit this function
+        if [ $? -eq 1 ]; then return; fi
     done
 
     # Save the command in history
