@@ -1,4 +1,5 @@
-#!/bin/bash
+#!/bin/env bash
+
 
 # Grabs the $PWD of where the script is being run
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
