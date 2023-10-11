@@ -159,9 +159,7 @@ function _compile_link()
 
     # If object file was created then increment counter
     if [ -e "$file.o" ]; then
-        ((num_obj_files++))
-
-        # Check if the file is main
+        # Add file to linking command
         if [ "$file" == "$main_file" ]; then
             link_cmnd_1+=" '$file'.o"
         else
@@ -176,7 +174,7 @@ function _compile_link()
 function _search_libraries()
 {
     # Grab number of libraries declared in main
-    lib_count=$(grep -w "lib:" "$main_file.asm" | wc -l)
+    local lib_count=$(grep -w "lib:" "$main_file.asm" | wc -l)
 
     # If greater then 0 then continue
     if [ $lib_count -gt 0 ]; then
@@ -228,7 +226,6 @@ function _evaluate()
 
     # Add counter for main file and object files
     main_counter=0
-    num_obj_files=0
 
     # These variables setup the linking command
     link_cmnd_1="$LINK_CMND"
@@ -255,20 +252,16 @@ function _evaluate()
 
 function _execute_debug()
 {
-    # If there's a correct number of object files then we're ready to create executable
-    if [ $num_obj_files == $((${#cmnd[@]}-1 + $lib_count)) ]; then
+    # Execute the linking command
+    eval "$link_cmnd_1$link_cmnd_2"
 
-        # Execute the linking command
-        eval "$link_cmnd_1$link_cmnd_2"
-
-        # Check if the executable was created
-        if [ -e "$main_file.out" ]; then
-            if [ ${cmnd[0]} == 'e' ]; then
-                eval "./'$main_file'.out"
-                printf "Exited ${GRN}$main_file.out${END}\n"
-            else
-                eval "gdb --quiet '$main_file'.out"
-            fi
+    # Check if the executable was created
+    if [ -e "$main_file.out" ]; then
+        if [ ${cmnd[0]} == 'e' ]; then
+            eval "./'$main_file'.out"
+            printf "Exited ${GRN}$main_file.out${END}\n"
+        else
+            eval "gdb --quiet '$main_file'.out"
         fi
     fi
 
