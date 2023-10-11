@@ -101,7 +101,11 @@ function _validate()
         done
     fi
 
-    # If input is acceptable then move to next function
+    # At this point, input is valid, so save input into history
+    history -s "${cmnd[@]}"; HISTCONTROL=ignoredups:erasedups
+    prev_input=("${cmnd[@]}")
+
+    # Pass input to next function
     _evaluate "${cmnd[@]}"
 }
 
@@ -229,10 +233,6 @@ function _evaluate()
         # If there was an error from the function above, exit this function
         if [ $? -eq 1 ]; then return; fi
     done
-
-    # Save the command in history
-    history -s "${cmnd[@]}"; HISTCONTROL=ignoredups:erasedups
-    prev_input=("${cmnd[@]}")
 
     # Search for library files declared in main
     _search_libraries
