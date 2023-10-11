@@ -52,7 +52,7 @@ function _append_files
     fi
 }
 
-function _list()
+function _list
 {
     # Display how to exit script
     printf "${DIM}Exit script with: ${BLD}${YLW}CTRL + C${END}\n\n"
@@ -63,7 +63,7 @@ function _list()
     done
 }
 
-function _validate()
+function _validate
 {
     # Verify that first character is 'e' or 'd' otherwise exit the function
     if [ "${cmnd[0]}" != 'e' ] && [ "${cmnd[0]}" != 'd' ]; then
@@ -103,7 +103,7 @@ function _validate()
     _evaluate "${cmnd[@]}"
 }
 
-function _prev_input()
+function _prev_input
 {
     # Check if previous command exists
     if [ ${#prev_input[@]} != 0 ]; then
@@ -116,7 +116,7 @@ function _prev_input()
     fi
 }
 
-function _input()
+function _input
 {
     # Grab user input
     read -r -e -p $'\nEnter: \e[1m\e[33m' -a cmnd; printf "${END}"
@@ -132,7 +132,7 @@ function _input()
     fi
 }
 
-function _compile_link()
+function _compile_link
 {
     # Grab the argument passed in (file to be compiled)
     local file=$1
@@ -158,7 +158,7 @@ function _compile_link()
     fi
 }
 
-function _search_libraries()
+function _search_libraries
 {
     # Grab number of libraries declared in main
     local lib_count=$(grep -w "lib:" "$main_file.asm" | wc -l)
@@ -206,7 +206,7 @@ function _check_for_main
     fi
 }
 
-function _evaluate()
+function _evaluate
 {
     # Pass the input from user
     cmnd=("$@")
@@ -237,7 +237,7 @@ function _evaluate()
     _execute_debug
 }
 
-function _execute_debug()
+function _execute_debug
 {
     # Execute the linking command
     eval "$link_cmnd_1$link_cmnd_2"
@@ -258,7 +258,7 @@ function _execute_debug()
 
 trap exit 0 SIGINT
 
-function _main()
+function _main
 {
     _input
     _main
