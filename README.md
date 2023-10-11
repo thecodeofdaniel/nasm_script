@@ -10,7 +10,7 @@
   git clone https://github.com/thecodeofdaniel/nasm_script.git <~/SOME/PATH>
   ```
 
-- Create a file named `lib_dir.txt`.
+- Create a file named `lib_dir.txt` in that diretory
 
   ```
   touch lib_dir.txt
