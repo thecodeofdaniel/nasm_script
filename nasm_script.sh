@@ -198,13 +198,36 @@ function _search_libraries()
     fi
 }
 
+function _check_for_main
+{
+    # Grab the number associated with file from list
+    local file_num=$1
+    local file_name=${asm_file[$file_num-1]}.asm
+
+    # The file is main if it includes the "_start" string
+    if grep -Fq "_start" "$file_name"; then
+        ((main_counter++))
+
+        # If input includes 2 or more files that are main then exit function
+        if [ $main_counter -gt 1 ]; then
+            printf "${RED}Include (only) one main file${END}\n"
+            _remove_obj_files
+            return 1
+        # Otherwise set main_file variable and add to linking command
+        else
+            main_file=${asm_file[$file_num-1]}
+            link_cmnd_1+=" '$main_file'.out"
+        fi
+    fi
+}
+
 function _evaluate()
 {
     # Pass the input from user
     cmnd=("$@")
 
     # Add counter for main file and object files
-    local main_counter=0
+    main_counter=0
     num_obj_files=0
 
     # These variables setup the linking command
@@ -214,30 +237,19 @@ function _evaluate()
     # Go through each file from input
     for ((i = 1 ; i < ${#cmnd[@]} ; i++))
     do
-        # Grab the number associated with file from list
-        local file_num=${cmnd[$i]}
+        # Grab the file's number
+        local file_num="${cmnd[$i]}"
 
-        # Check if file is main
-        local is_main=$(grep "_start" "${asm_file[$file_num-1]}.asm" | wc -l)
-        if [ $is_main == 2 ]; then
-            ((main_counter++))
+        # Pass in that number to function
+        _check_for_main "$file_num"
 
-            # If input has more than one main file then exit function
-            if [ $main_counter -gt 1 ]; then
-                printf "${RED}Include (only) one main file${END}\n"
-                _remove_obj_files
-                return
-            # Otherwise declare the name of the main file and add to linking command
-            else
-                main_file=${asm_file[$file_num-1]}
-                link_cmnd_1+=" '$main_file'.out"
-            fi
-        fi
+        # Exit function is more than one main file is found
+        if [ $? -eq 1 ]; then return; fi
 
         # Run file through function
         _compile_link "${asm_file[$file_num-1]}"
 
-        # If there was an error from the function above, exit this function
+        # Exit this function if object file was not compiled
         if [ $? -eq 1 ]; then return; fi
     done
 
@@ -253,6 +265,7 @@ function _execute_debug()
     if [ $num_obj_files == $((${#cmnd[@]}-1 + $lib_count)) ]; then
 
         # Execute the linking command
+        echo "$link_cmnd_1$link_cmnd_2"
         eval "$link_cmnd_1$link_cmnd_2"
 
         # Check if the executable was created
