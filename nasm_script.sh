@@ -185,14 +185,14 @@ function _search_libraries()
         do
             # Grab name of library file declared in main file
             local lib_file=$(grep -w "lib:" "$main_file.asm" | grep "lib:" -n | grep $i | awk '{print $3}')
-            # Remove the file extension (.asm)
             lib_file="${lib_file%.*}"
 
             # Check if that file exists
             if find $LIB_DIR -type f -name "$lib_file.asm" | grep -q .; then
                 _compile_link "$LIB_DIR/$lib_file"
             else
-                printf "${RED}\"$lib_file\" was not found ${END}\n"
+                printf "${RED}\"$lib_file.asm\" was not found in library dir${END}\n"
+                return 1
             fi
         done
     fi
@@ -240,22 +240,16 @@ function _evaluate()
         # Grab the file's number
         local file_num="${cmnd[$i]}"
 
-        # Pass in that number to function
-        _check_for_main "$file_num"
+        # Check if file is main. If more than two are declared then exit
+        _check_for_main "$file_num"; if [ $? -eq 1 ]; then return; fi
 
-        # Exit function is more than one main file is found
-        if [ $? -eq 1 ]; then return; fi
-
-        # Run file through function
-        _compile_link "${asm_file[$file_num-1]}"
-
-        # Exit this function if object file was not compiled
-        if [ $? -eq 1 ]; then return; fi
+        # Compile file. If object file is not created then exit
+        _compile_link "${asm_file[$file_num-1]}"; if [ $? -eq 1 ]; then return; fi
     done
 
-    # Search for library files declared in main
-    _search_libraries
-    # Create executable
+    # Check if any library files were declared. If one is not found then exit
+    _search_libraries; if [ $? -eq 1 ]; then return; fi
+
     _execute_debug
 }
 
@@ -265,7 +259,6 @@ function _execute_debug()
     if [ $num_obj_files == $((${#cmnd[@]}-1 + $lib_count)) ]; then
 
         # Execute the linking command
-        echo "$link_cmnd_1$link_cmnd_2"
         eval "$link_cmnd_1$link_cmnd_2"
 
         # Check if the executable was created
