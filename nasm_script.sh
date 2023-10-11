@@ -6,10 +6,6 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # Grabs the library directory from "lib_dir.txt"
 LIB_DIR=$(head -n 1 $SCRIPT_DIR/lib_dir.txt | grep -oE '^\S+' | sed 's/\/$//')
 
-# Set to true if you want to keep .o/.out files
-keep_obj_files=false
-keep_out_files=false
-
 
 # Colors/text format
 END="\e[0m"
@@ -22,29 +18,20 @@ BLU="\e[34m"
 
 # Command to build object files
 BUILD_CMND="nasm -f elf"
-
 # Command to link object files and produce executable
 LINK_CMND="ld -m elf_i386 -o"
 
-function _remove_obj_files()
-{
-    if find . -type f -name "*.o" | grep -q .; then
-        rm *.o
-    fi
-}
 
-function _remove_lib_obj_files()
+function _cleanup
 {
-    if find $LIB_DIR -type f -name "*.o" | grep -q .; then
-        rm $LIB_DIR/*.o
-    fi
-}
+    # Remove object files in current directory
+    if find . -type f -name "*.o" | grep -q .; then rm *.o; fi
 
-function _remove_out_file()
-{
-    if find . -type f -name "*.out" | grep -q .; then
-        rm *.out
-    fi
+    # Remove object files in library directory
+    if find $LIB_DIR -type f -name "*.o" | grep -q .; then rm $LIB_DIR/*.o; fi
+
+    # Remove executable file
+    if find . -type f -name "*.out" | grep -q .; then rm *.out; fi
 }
 
 function _append_files
@@ -209,7 +196,7 @@ function _check_for_main
         # If input includes 2 or more files that are main then exit function
         if [ $main_counter -gt 1 ]; then
             printf "${RED}Include (only) one main file${END}\n"
-            _remove_obj_files
+            _cleanup
             return 1
         # Otherwise set main_file variable and add to linking command
         else
@@ -265,9 +252,8 @@ function _execute_debug()
         fi
     fi
 
-    # Remove all .o/.out files if user chooses so
-    if [ $keep_obj_files = false ]; then _remove_obj_files; _remove_lib_obj_files; fi
-    if [ $keep_out_files = false ]; then _remove_out_file; fi
+    # Remove object files and executable
+    _cleanup
 }
 
 trap exit 0 SIGINT
