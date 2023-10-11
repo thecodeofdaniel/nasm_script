@@ -3,9 +3,8 @@
 # Grabs the $PWD of where the script is being run
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-
 # Grabs the library directory from "lib_dir.txt"
-LIB_DIR=$(head -n 1 $SCRIPT_DIR/lib_dir.txt | grep -oE '^\S+')
+LIB_DIR=$(head -n 1 $SCRIPT_DIR/lib_dir.txt | grep -oE '^\S+' | sed 's/\/$//')
 
 # Set to true if you want to keep .o/.out files
 keep_obj_files=false
@@ -176,8 +175,8 @@ function _search_libraries()
             lib_file="${lib_file%.*}"
 
             # Check if that file exists
-            if find "$LIB_DIR" -type f -name "$lib_file.asm" | grep -q .; then
-                _compile_link "$LIB_DIR$lib_file"
+            if find $LIB_DIR -type f -name "$lib_file.asm" | grep -q .; then
+                _compile_link "$LIB_DIR/$lib_file"
             else
                 printf "${RED}\"$lib_file\" was not found ${END}\n"
             fi
