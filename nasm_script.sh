@@ -186,11 +186,11 @@ function _search_libraries
 
 function _check_for_main
 {
-    # Grab the number associated with file from list
+    # Grab the number and name of file
     local file_num=$1
     local file_name=${asm_file[$file_num-1]}.asm
 
-    # The file is main if it includes the "_start" string
+    # The file is main if includes the "_start" string
     if grep -Fq "_start" "$file_name"; then
         ((main_counter++))
 
@@ -212,7 +212,7 @@ function _evaluate
     # Pass the input from user
     cmnd=("$@")
 
-    # Add counter for main file and object files
+    # Add counter for main files
     main_counter=0
 
     # These variables setup the linking command
