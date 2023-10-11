@@ -147,7 +147,7 @@ function _compile_link()
     fi
 
     # If object file was created then increment counter
-    if [ -e "$file.asm" ]; then
+    if [ -e "$file.o" ]; then
         ((num_obj_files++))
     fi
 
