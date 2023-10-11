@@ -280,4 +280,5 @@ function _main()
 }
 
 _append_files
-_list; _main
+_list
+_main
