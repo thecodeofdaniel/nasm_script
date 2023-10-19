@@ -262,7 +262,7 @@ function _execute_debug
     _cleanup
 }
 
-trap exit 0 SIGINT
+trap "_cleanup; exit 0" SIGINT
 
 function _main
 {
