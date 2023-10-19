@@ -232,10 +232,15 @@ function _evaluate
         _compile_link "${asm_file[$file_num-1]}"; if [ $? -eq 1 ]; then return; fi
     done
 
-    # Check if any library files were declared. If one is not found then exit
-    _search_libraries; if [ $? -eq 1 ]; then return; fi
+    # There must exist one main file
+    if [ $main_counter != 0 ]; then
+        # Check if any library files were declared. If one is not found then exit
+        _search_libraries; if [ $? -eq 1 ]; then return; fi
 
-    _execute_debug
+        _execute_debug
+    else
+        printf "${RED}There must exist one main file!${END}\n"
+    fi
 }
 
 function _execute_debug
